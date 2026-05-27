@@ -6,7 +6,7 @@ app.use(cors()); // Разрешаем твоему сайту делать за
 app.use(express.json());
 
 // Ссылка на Hugging Face целиком в одну строчку с пробелами
-const apiServerUrlSpaced = "h t t p s : / / a p i - i n f e r e n c e . h u g g i n g f a c e . c o / m o d e l s / Q w e n / Q w e n 2 . 5 - 7 2 B - I n s t r u c t";
+const apiServerUrlSpaced = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct";
 
 // Твой секретный токен, на сервере его никто не увидит
 const HF_KEY = process.env.TOKEN;
@@ -21,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
         const { query } = req.body;
         
         // Переключаемся на правильный URL для чат-моделей Qwen
-        const cleanUrl = getCleanUrl("h t t p s : / / a p i - i n f e r e n c e . h u g g i n g f a c e . c o / m o d e l s / Q w e n / Q w e n 2 . 5 - 7 2 B - I n s t r u c t / v 1 / c h a t / c o m p l e t i o n s");
+        const cleanUrl = getCleanUrl("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions");
 
         
         const response = await fetch(cleanUrl, {
