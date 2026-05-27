@@ -216,10 +216,8 @@
 </div>
 
 <script>
-// Новое рабочее бесплатное зеркало без ошибок CORS
-const apiServerUrlSpaced = "h t t p s : / / a p i . p z h o n . r u / v 1 / c h a t / c o m p l e t i o n s";
-
-const API_KEY = "free-key-safe";
+// Твоя новая рабочая ссылка на Render с пробелами
+const renderServerUrlSpaced = "h t t p s : / / m l - a g e n t - i j h t . o n r e n d e r . c o m / a p i / c h a t";
 
 let cookieAccepted = false;
 let messagesHistory = [
@@ -246,7 +244,7 @@ function checkCookieConsent() {
     let consent = getCookie("cookie_consent");
     if (consent === "true") {
         cookieAccepted = true;
-        document.getElementById("chat_mode").innerText = "ИИ активен (Куки приняты)";
+        document.getElementById("chat_mode").innerText = "ИИ активен через Render";
     } else if (consent === "false") {
         cookieAccepted = false;
         document.getElementById("chat_mode").innerText = "Локальный режим (Без ИИ)";
@@ -259,9 +257,9 @@ function acceptCookies() {
     setCookie("cookie_consent", "true");
     cookieAccepted = true;
     document.getElementById("cookie_banner").style.display = "none";
-    document.getElementById("chat_mode").innerText = "ИИ активен (Куки приняты)";
+    document.getElementById("chat_mode").innerText = "ИИ активен через Render";
     let screen = document.getElementById("system_screen");
-    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Использование куки разрешено! ИИ доступен.</div>`;
+    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Использование куки разрешено! Онлайн ИИ активирован.</div>`;
     scrollScreen();
 }
 
@@ -271,7 +269,7 @@ function rejectCookies() {
     document.getElementById("cookie_banner").style.display = "none";
     document.getElementById("chat_mode").innerText = "Локальный режим (Без ИИ)";
     let screen = document.getElementById("system_screen");
-    screen.innerHTML += `<div class="msg sys-msg" style="color: #ff4444;">[ПРЕДУПРЕЖДЕНИЕ]: Вы отклонили куки. Онлайн ИИ недоступен.</div>`;
+    screen.innerHTML += `<div class="msg sys-msg" style="color: #ff4444;">[ПРЕДУПРЕЖДЕНИЕ]: Вы отклонили куки. Онлайн ИИ отключен.</div>`;
     scrollScreen();
 }
 
@@ -317,7 +315,6 @@ async function startAI(query) {
     let text = query.toLowerCase().trim();
     
     if (text === "очистить") {
-        messagesHistory = [{ role: "system", content: "Ты — полезный и вежливый ИИ-помощник Миртекс. Отвечай кратко, понятно и только на русском языке." }];
         screen.innerHTML = "<div class='msg sys-msg'>[СИСТЕМА]: История чата очищена.</div>";
         return;
     }
@@ -331,7 +328,7 @@ async function startAI(query) {
     screen.appendChild(loadingDiv);
     scrollScreen();
 
-    // 1. Проверяем калькулятор
+    // 1. Калькулятор
     let mathResult = checkMath(text);
     if (mathResult !== null) {
         await delay(500);
@@ -341,7 +338,7 @@ async function startAI(query) {
         return;
     }
 
-    // 2. Проверяем локальные команды на рецепты и время
+    // 2. Локальные команды (Рецепты / Время)
     let isTime = ["время", "час", "сколько время"].some(word => text.includes(word));
     let isRecipe = ["рецепт", "приготовить", "кушать", "еда"].some(word => text.includes(word));
 
@@ -366,43 +363,43 @@ async function startAI(query) {
         return;
     }
 
-    // 3. Если это не команда, отправляем онлайн-запрос ИИ (если куки приняты)
+    // 3. Запрос на сервер Render
     if (!cookieAccepted) {
         loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg">❌ В локальном режиме я не знаю команду '${query}'. Примите куки для онлайн ИИ!</div>`;
+        screen.innerHTML += `<div class="msg ai-msg">❌ В локальном режиме онлайн ИИ недоступен. Примите куки!</div>`;
         scrollScreen();
         return;
     }
 
-    messagesHistory.push({ role: "user", content: query });
-
     try {
-        let cleanUrl = getCleanUrl(apiServerUrlSpaced);
+        let cleanUrl = getCleanUrl(renderServerUrlSpaced);
         let response = await fetch(cleanUrl, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + API_KEY
-            },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: messagesHistory
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: query })
         });
 
         let data = await response.json();
         loadingDiv.remove();
 
-        if (data && data.choices && data.choices[0].message) {
-            let aiResult = data.choices[0].message.content.trim();
+        let aiResult = "";
+        if (data && data.generated_text) {
+            aiResult = data.generated_text.trim();
+        } else if (Array.isArray(data) && data[0] && data[0].generated_text) {
+            aiResult = data[0].generated_text.trim();
+        }
+
+        if (aiResult) {
+            aiResult = aiResult.replace("Ты — полезный ИИ-помощник Миртекс. Отвечай кратко на русском языке. Вопрос: " + query, "").trim();
             screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
-            messagesHistory.push({ role: "assistant", content: aiResult });
+        } else if (data && data.error) {
+            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка сервера Render: ${data.error}</div>`;
         } else {
-            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка: Неверный ответ от ИИ.</div>`;
+            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка: Неверный формат ответа.</div>`;
         }
     } catch (error) {
         loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg" style='color: #ff4444;'>❌ Ошибка сети. Проверьте интернет.</div>`;
+        screen.innerHTML += `<div class="msg ai-msg" style='color: #ff4444;'>❌ Ошибка соединения с сервером Render.</div>`;
     }
     scrollScreen();
 }
