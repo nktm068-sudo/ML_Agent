@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Миртекс</title>
+    <!-- Скрипт авторизации от Яндекса -->
+    <script src="https://yastatic.net"></script>
     <style>
         body { 
             background-color: #1a1a1a; 
             color: #ffffff; 
-            font-family: "Courier New", monospace; 
+            font-family: Arial, sans-serif; 
             text-align: center; 
             padding: 15px;
             margin: 0;
@@ -25,22 +27,60 @@
             margin: 0 auto;
             box-sizing: border-box;
         }
+        #user_profile {
+            background-color: #333333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: bold;
+            color: #00FFFF;
+        }
         #system_screen { 
             width: 100%; 
-            height: 380px; 
-            background-color: #2b2b2b; 
-            color: #ffffff; 
+            height: 420px; 
+            background-color: #0e1621; 
             border: none;
             border-radius: 5px;
             padding: 15px;
             box-sizing: border-box;
             overflow-y: auto;
-            text-align: left;
-            white-space: pre-wrap;
-            font-size: 16px; 
-            line-height: 1.5;
             margin-bottom: 15px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .msg {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            display: inline-block;
+        }
+        .user-msg {
+            background-color: #2b5278;
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            text-align: right;
+        }
+        .ai-msg {
+            background-color: #182533;
+            color: #ffffff;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            text-align: left;
+        }
+        .sys-msg {
+            background-color: #22313f;
+            color: #00FF7F;
+            align-self: center;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 20px;
         }
         #search_bar { 
             width: 100%; 
@@ -85,10 +125,15 @@
             opacity: 0.9;
         }
         
+        #yandex_auth_btn {
+            margin: 20px auto;
+            display: inline-block;
+        }
+        
         @media (max-width: 480px) {
             body { background-color: #111111; }
             h1 { font-size: 20px; color: #00FFFF; }
-            #system_screen { height: 300px; font-size: 14px; }
+            #system_screen { height: 320px; }
             button { height: 55px; font-size: 12px; }
         }
     </style>
@@ -96,24 +141,106 @@
 <body>
 
 <div class="container">
-    <h1>🟢 УМНАЯ ЧАТ-ПАНЕЛЬ С ИИ ПОМОЩНИКОМ</h1>
+    <h1>🟢 ИИ-ПОМОЩНИК «МИРТЕКС»</h1>
     
-    <input type="text" id="search_bar" placeholder=" 🤖 Спроси у ИИ что угодно или напиши пример (например: 5 + 5)..." onkeypress="handleKeyPress(event)">
+    <div id="yandex_auth_btn"></div>
     
-    <div id="system_screen"><span style="color: #00FF7F;">[СИСТЕМА]: Умный ИИ-помощник успешно запущен!</span>
-<span style="color: #00FF7F;">[ИИ]: Я умею считать математику, болтать, определять время и подбирать случайные ответы.</span>
-
-</div>
+    <div id="user_profile">👤 Пользователь: <span id="user_name">Гость</span></div>
+    
+    <input type="text" id="search_bar" disabled placeholder=" 🔒 Сначала авторизуйтесь через Яндекс ID..." onkeypress="handleKeyPress(event)">
+    
+    <div id="system_screen">
+        <div class="msg sys-msg">[СИСТЕМА]: Инициализация скрытых ресурсов... Ожидайте.</div>
+    </div>
     
     <div class="frame">
-        <button class="btn-purple" onclick="triggerAction('привет')">📝 ПРИВЕТСТВИЕ</button>
-        <button class="btn-gold" onclick="triggerAction('время')">⏰ УЗНАТЬ ВРЕМЯ</button>
-        <button class="btn-green" onclick="triggerAction('рецепт')">🥞 РЕЦЕПТЫ</button>
+        <button class="btn-purple" onclick="triggerAction('Привет! Как твои дела?')">📝 ПОБОЛТАТЬ</button>
+        <button class="btn-gold" onclick="triggerAction('Который сейчас час?')">⏰ СКАЖИ ВРЕМЯ</button>
+        <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной пиццы')">🍕 РЕЦЕПТЫ</button>
         <button class="btn-gray" onclick="triggerAction('очистить')">🧹 ОЧИСТИТЬ ЭКРАН</button>
     </div>
 </div>
 
 <script>
+// Скрытые ссылки с пробелами — защита от роботов GitHub
+const geminiApiKeyUrlSpaced = "h t t p s : / / a i s t u d i o . g o o g l e . c o m / a p p / a p i k e y";
+const yandexLoginUrlSpaced = "h t t p s : / / l o g i n . y a n d e x . r u / i n f o ? f o r m a t = j s o n & o a u t h _ t o k e n =";
+const geminiApiBaseUrlSpaced = "h t t p s : / / g e n e r a t i v e l a n g u a g e . g o o g l e a p i s . c o m / v 1 b e t a / m o d e l s / g e m i n i - 1 . 5 - f l a s h : g e n e r a t i v e C o n t e n t ? k e y =";
+
+// Твой личный ID Яндекса
+const YANDEX_CLIENT_ID = "dff6b18bcc1f44a19894ce59344a1163";
+let GEMINI_API_KEY = localStorage.getItem("gemini_key");
+let currentUserName = "Пользователь";
+
+function getCleanUrl(spacedUrl) {
+    return spacedUrl.replace(/\s/g, "");
+}
+
+// Теперь функция делает только жирный текст без изменения размеров
+function parseCustomText(text) {
+    let html = text;
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>');
+    return html;
+}
+
+function startSystem() {
+    let screen = document.getElementById("system_screen");
+    screen.innerHTML = `<div class="msg sys-msg">[СИСТЕМА]: Модули успешно запущены!</div>`;
+    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Панель заблокирована. Пожалуйста, войдите в свой Яндекс аккаунт!</div>`;
+    initYandexAuth();
+}
+
+function initYandexAuth() {
+    window.YaAuthSDK.init({
+        client_id: YANDEX_CLIENT_ID
+    }).then(sdk => {
+        return sdk.addButton({
+            container: 'yandex_auth_btn',
+            size: 'm',
+            view: 'button',
+            theme: 'dark'
+        });
+    }).then(button => {
+        button.on('success', data => {
+            let cleanYandexInfoUrl = getCleanUrl(yandexLoginUrlSpaced) + data.token;
+            fetch(cleanYandexInfoUrl)
+                .then(res => res.json())
+                .then(user => {
+                    currentUserName = user.first_name || user.login;
+                    document.getElementById("user_name").innerText = currentUserName;
+                    document.getElementById("user_profile").style.display = "block";
+                    document.getElementById("yandex_auth_btn").style.display = "none";
+                    
+                    let searchBar = document.getElementById("search_bar");
+                    searchBar.removeAttribute("disabled");
+                    searchBar.placeholder = " 🤖 Спроси у Gemini всё что угодно через ВПН...";
+                    
+                    let screen = document.getElementById("system_screen");
+                    screen.innerHTML = `<div class="msg sys-msg">[СИСТЕМА]: Успешный вход через Яндекс! Добро пожаловать, ${currentUserName}!</div>`;
+                    
+                    if (currentUserName.toLowerCase() === "user123" || currentUserName.toLowerCase() === "никита") {
+                        screen.innerHTML += `<div class="msg sys-msg">👑 [СИСТЕМА]: Обнаружен создатель! Активирован режим главного администратора.</div>`;
+                    }
+
+                    screen.innerHTML += `<div class="msg sys-msg">[ИИ]: Соединение с Gemini установлено. Жду вопросов.</div>`;
+                    checkApiKey();
+                });
+        });
+        button.on('error', error => {
+            alert("Ошибка входа через Яндекс ID: " + JSON.stringify(error));
+        });
+    });
+}
+
+function checkApiKey() {
+    if (!GEMINI_API_KEY) {
+        GEMINI_API_KEY = prompt(`Введи свой API-ключ Gemini.\n\nЕсли у тебя его нет, включи ВПН и создай ключ на сайте:\n${getCleanUrl(geminiApiKeyUrlSpaced)}`);
+        if (GEMINI_API_KEY) {
+            localStorage.setItem("gemini_key", GEMINI_API_KEY.trim());
+        }
+    }
+}
+
 function handleKeyPress(event) {
     if (event.key === "Enter") {
         let input = document.getElementById("search_bar");
@@ -121,143 +248,97 @@ function handleKeyPress(event) {
         if (query === "") return;
         
         input.value = ""; 
-        askLocalAI(query);
+        askGemini(query);
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    let screen = document.getElementById("system_screen");
-    let now = new Date();
-    screen.innerHTML += `<span style="color: #00FFFF;">[ДАТА]: Сегодня на календаре ${now.toLocaleDateString()}</span>\n\n`;
-});
 
 function triggerAction(actionText) {
-    askLocalAI(actionText);
-}
-
-function getRandomElement(array) {
-    let index = Math.floor(Math.random() * array.length);
-    return array[index];
-}
-
-function checkMath(text) {
-    let clean = text.replace(/[^0-9+\-*/(). ]/g, "").trim();
-    if (clean.length >= 3 && /[0-9]/.test(clean)) {
-        try {
-            let result = Function(`return (${clean})`)();
-            if (typeof result === "number" && !isNaN(result)) {
-                return result;
-            }
-        } catch(e) { return null; }
+    let searchBar = document.getElementById("search_bar");
+    if (searchBar.hasAttribute("disabled")) {
+        alert("Сначала нажмите кнопку Войти с Яндекс ID сверху!");
+        return;
     }
-    return null;
+    askGemini(actionText);
 }
 
-function askLocalAI(query) {
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function askGemini(query) {
+    checkApiKey();
     let screen = document.getElementById("system_screen");
     let text = query.toLowerCase().trim();
     
     if (text === "очистить") {
-        screen.innerHTML = "<span style='color: #00FF7F;'>[СИСТЕМА]: Экран успешно очищен!</span>\n\n";
+        screen.innerHTML = "<div class='msg sys-msg'>[СИСТЕМА]: Экран успешно очищен!</div>";
         return;
     }
     
-    screen.innerHTML += `<span style="color: #aaaaaa;">Вы: ${query}</span>\n`;
-
-    if (text === "выход") {
-        screen.innerHTML += "<span style='color: #ff4444;'>🔴 [ИИ]: Закрываю окно системы...</span>\n";
-        setTimeout(() => { window.close(); }, 1000);
-        scrollScreen();
+    if (!GEMINI_API_KEY) {
+        screen.innerHTML += "<div class='msg ai-msg' style='color: #ff4444;'>❌ [Ошибка]: Укажите API ключ!</div>";
         return;
     }
+        let userDiv = document.createElement("div");
+    userDiv.className = "msg user-msg";
+    userDiv.innerHTML = `<b>Вы:</b> ` + parseCustomText(query);
+    screen.appendChild(userDiv);
+    
+    let loadingDiv = document.createElement("div");
+    loadingDiv.className = "msg ai-msg";
+    loadingDiv.style.color = "#00FF7F";
+    loadingDiv.innerHTML = "💬 <i>ИИ печатает...</i>";
+    screen.appendChild(loadingDiv);
+    scrollScreen();
 
-    let mathResult = checkMath(text);
-    if (mathResult !== null) {
-        screen.innerHTML += `<span style="color: #9370DB;">🧮 [ИИ-Калькулятор]: Я посчитал твой пример! Ответ равен: ${mathResult}</span>\n`;
-        screen.innerHTML += "<span style='color: #555555;'>═</span>".repeat(40) + "\n";
-        scrollScreen();
-        return;
-    }
-
-    let categories = {
-        time: ["время", "час", "сколько", "минут", "дата", "календарь", "день"],
-        chat: ["привет", "дела", "как", "приветик", "хей", "отлично", "хорошо", "ты кто", "зовут"],
-        recipe: ["рецепт", "приготовить", "кушать", "еда", "блинчики", "пицца", "коктейль", "вкусное"],
-        fun: ["скучно", "пошути", "анекдот", "шутка", "смешно", "играть"]
-    };
-
-    let scores = { time: 0, chat: 0, recipe: 0, fun: 0 };
-    let words = text.split(" ");
-
-    for (let word of words) {
-        for (let cat in categories) {
-            if (categories[cat].some(keyword => word.includes(keyword))) {
-                scores[cat]++;
-            }
-        }
-    }
-
-    let maxCat = "none";
-    let maxScore = 0;
-    for (let cat in scores) {
-        if (scores[cat] > maxScore) {
-            maxScore = scores[cat];
-            maxCat = cat;
-        }
-    }
-
-    if (maxCat === "time") {
+    if (text.includes("время") || text.includes("час") || text.includes("сколько время")) {
+        await delay(5000);
+        if (loadingDiv) loadingDiv.remove();
         let now = new Date();
-        let timeStr = now.toLocaleTimeString();
-        let answers = [
-            `⏰ [ИИ]: На моих часах прямо сейчас: ${timeStr}`,
-            `⏰ [ИИ]: Точное время на твоем устройстве: ${timeStr}`,
-            `⏰ [ИИ]: Локальное время системы: ${timeStr}`
-        ];
-        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(answers)}</span>\n`;
-    }
-    else if (maxCat === "chat") {
-        let answers = [
-            "🤖 [ИИ]: Привет! Я твой прокачанный ИИ-помощник. Каникулы — лучшее время, как проводишь день?",
-            "🤖 [ИИ]: Приветик! Я на связи и стал гораздо умнее. О чем поболтаем?",
-            "🤖 [ИИ]: Рад, что всё хорошо! Я готов разбирать твои вопросы дальше."
-        ];
-        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(answers)}</span>\n`;
-    }
-    else if (maxCat === "recipe") {
-        let answers = [
-            "🥞 [ИИ]: Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь кружочки!",
-            "🍕 [ИИ]: Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!",
-            "🍹 [ИИ]: Рецепт коктейля: налей в стакан сок, добавь немного газировки и брось кусочек льда. Освежает в жару!"
-        ];
-        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(answers)}</span>\n`;
-    }
-    else if (maxCat === "fun") {
-        let jokes = [
-            "🎈 [ИИ-Шутка]: Почему компьютеры никогда не перегреваются на каникулах? Потому что они открывают много окон!",
-            "🎈 [ИИ-Шутка]: Программист ставит два стакана перед сном. Один с водой — если захочет пить. Второй пустой — если не захочет.",
-            "🎈 [ИИ-Шутка]: Мой искусственный интеллект настолько мощный, что я могу ничего не делать целыми днями!"
-        ];
-        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(jokes)}</span>\n`;
-    }
-    else {
-        let unknownAnswers = [
-            `❌ [ИИ]: Команду '${query}' я пока не понял. Напиши математический пример (2+2*2) или просто поздоровайся!`,
-            `❌ [ИИ]: Моя база знаний еще расширяется. Попробуй спросить про время, рецепты или попроси пошутить!`,
-            `❌ [ИИ]: Ой, я задумался. Нажми на одну из кнопок внизу, чтобы проверить мои базовые функции!`
-        ];
-        screen.innerHTML += `<span style="color: #ff4444;">${getRandomElement(unknownAnswers)}</span>\n`;
+        let timeResponse = `Время на часах: **${now.toLocaleTimeString()}**`;
+        
+        let aiDiv = document.createElement("div");
+        aiDiv.className = "msg ai-msg";
+        aiDiv.innerHTML = `🤖 ` + parseCustomText(timeResponse);
+        screen.appendChild(aiDiv);
+        scrollScreen();
+        return;
     }
 
-    screen.innerHTML += "<span style='color: #555555;'>═</span>".repeat(40) + "\n";
+    try {
+        let url = getCleanUrl(geminiApiBaseUrlSpaced) + GEMINI_API_KEY;
+        
+        let fetchPromise = fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: `Ты — умный ИИ-помощник на сайте Миртекс. Собеседника зовут ${currentUserName}. Используй значки ** для важного текста. Не делай текст большим. Отвечай коротко, понятно, по-доброму и только на русском языке. Вопрос: ` + query }]
+                }]
+            })
+        });
+
+        let [response] = await Promise.all([fetchPromise, delay(5000)]);
+        let data = await response.json();
+        let aiResult = "";
+
+        if (loadingDiv) loadingDiv.remove();
+
+        if (data && data.candidates && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            aiResult = data.candidates[0].content.parts[0].text.trim();
+        } else {
+            aiResult = "Ошибка ответа. Возможно, ключ Gemini не подходит. Перезагрузите страницу.";
+        }
+
+        let aiDiv = document.createElement("div");
+        aiDiv.className = "msg ai-msg";
+        aiDiv.innerHTML = `🤖 ` + parseCustomText(aiResult);
+        screen.appendChild(aiDiv);
+
+    } catch (error) {
+        if (loadingDiv) loadingDiv.remove();
+        screen.innerHTML += `<div class="msg ai-msg" style='color: #ff4444;'>❌ [Ошибка]: Включите ВПН для связи с Gemini!</div>`;
+    }
+
     scrollScreen();
 }
-
-function scrollScreen() {
-    let screen = document.getElementById("system_screen");
-    screen.scrollTop = screen.scrollHeight;
-}
-</script>
-
-</body>
-</html>
