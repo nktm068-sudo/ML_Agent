@@ -180,7 +180,6 @@
             border-radius: 20px; font-size: 14px; margin-top: 5px;
         }
 
-        /* ИСПРАВЛЕНО: Новый стиль для плашки предупреждения Cookie */
         .cookie-banner {
             display: none;
             position: absolute;
@@ -220,7 +219,6 @@
 <body>
 
 <div class="container">
-    <!-- ИСПРАВЛЕНО: Баннер предупреждения об использовании Cookie -->
     <div id="cookie_banner" class="cookie-banner">
         <div class="cookie-text">🍪 Наш сайт использует файлы куки (cookie) для безопасного хранения API-ключей нейросети на вашем устройстве.</div>
         <div class="cookie-buttons">
@@ -272,8 +270,8 @@
 <script>
 const geminiApiBaseUrlSpaced = "h t t p s : / / g e n e r a t i v e l a n g u a g e . g o o g l e a p i s . c o m / v 1 b e t a / m o d e l s / g e m i n i - 1 . 5 - f l a s h : g e n e r a t i v e C o n t e n t ? k e y =";
 
-const secretEmailHash = "bmlraXRhQG1pcnRleC5ydQ=="; // nikita@mirtex.ru
-const secretPasswordHash = "MTIzNDU="; // 12345
+const secretEmailHash = "bmlraXRhQG1pcnRleC5ydQ=="; 
+const secretPasswordHash = "MTIzNDU="; 
 
 let currentUserName = "Гость";
 let isFullVersion = false;
@@ -282,7 +280,55 @@ let cookieAccepted = false;
 function setCookie(name, value) {
     let d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
-    let expires = "expires=" + d.toUTCString();let GEMINI_API_KEY = getCookie("gemini_key");
+    let expires = "expires=" + d.toUTCString();
+    let cookieStr = name + "=" + value + ";";
+    cookieStr += expires + ";path=/;SameSite=Strict;Secure";
+    document.cookie = cookieStr;
+}
+
+function getCookie(name) {
+    let cname = name + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(cname) == 0) {
+            return c.substring(cname.length, c.length);
+        }
+    }
+    return "";
+}
+
+function checkCookieConsent() {
+    let consent = getCookie("cookie_consent");
+    if (consent === "true") {
+        cookieAccepted = true;
+    } else if (consent === "false") {
+        cookieAccepted = false;
+    } else {
+        document.getElementById("cookie_banner").style.display = "block";
+    }
+}
+
+function acceptCookies() {
+    setCookie("cookie_consent", "true");
+    cookieAccepted = true;
+    document.getElementById("cookie_banner").style.display = "none";
+    let screen = document.getElementById("system_screen");
+    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Использование куки разрешено!</div>`;
+    scrollScreen();
+}
+
+function rejectCookies() {
+    setCookie("cookie_consent", "false");
+    cookieAccepted = false;
+    document.getElementById("cookie_banner").style.display = "none";
+    let screen = document.getElementById("system_screen");
+    screen.innerHTML += `<div class="msg sys-msg" style="color: #ff4444;">[ПРЕДУПРЕЖДЕНИЕ]: Вы отклонили куки. Gemini недоступен.</div>`;
+    scrollScreen();
+}
+
+let GEMINI_API_KEY = getCookie("gemini_key");
 
 function getCleanUrl(spacedUrl) {
     return spacedUrl.replace(/\s/g, "");
@@ -374,6 +420,10 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getRandomElement(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
 async function startAI(query) {
     let screen = document.getElementById("system_screen");
     let text = query.toLowerCase().trim();
@@ -448,7 +498,7 @@ async function askGemini(query, loadingDiv) {
         let data = await response.json();
         if (loadingDiv) loadingDiv.remove();
 
-        if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
+        if (data && data.candidates && data.candidates[0].content) {
             let aiResult = data.candidates[0].content.parts[0].text.trim();
             screen.innerHTML += `<div class="msg ai-msg">🤖 ${parseCustomText(aiResult)}</div>`;
         } else {
