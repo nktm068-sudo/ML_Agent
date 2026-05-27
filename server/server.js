@@ -19,7 +19,9 @@ function getCleanUrl(spacedUrl) {
 app.post('/api/chat', async (req, res) => {
     try {
         const { query } = req.body;
-        const cleanUrl = getCleanUrl(apiServerUrlSpaced);
+        
+        // Переключаемся на правильный URL для чат-моделей Qwen
+        const cleanUrl = "https://huggingface.co";
         
         const response = await fetch(cleanUrl, {
             method: "POST",
@@ -28,14 +30,25 @@ app.post('/api/chat', async (req, res) => {
                 "Authorization": "Bearer " + HF_KEY
             },
             body: JSON.stringify({
-                inputs: "Ты — полезный ИИ-помощник Миртекс. Отвечай кратко на русском языке. Вопрос: " + query
+                model: "Qwen/Qwen2.5-72B-Instruct",
+                messages: [
+                    { role: "system", content: "Ты — полезный ИИ-помощник Миртекс. Отвечай кратко, понятно и на русском языке." },
+                    { role: "user", content: query }
+                ],
+                max_tokens: 300
             })
         });
 
         const data = await response.json();
-        res.json(data);
+        
+        // Отправляем обратно сайту чистый текст ответа
+        if (data && data.choices && data.choices[0] && data.choices[0].message) {
+            res.json({ generated_text: data.choices[0].message.content });
+        } else {
+            res.status(500).json({ error: "Ошибка структуры ответа Hugging Face", details: data });
+        }
     } catch (error) {
-        res.status(500).json({ error: "Ошибка сервера Render" });
+        res.status(500).json({ error: "Ошибка сервера Render: " + error.message });
     }
 });
 
