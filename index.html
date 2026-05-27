@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Chat Panel</title>
+    <title>Миртекс</title>
     <style>
         body { 
             background-color: #1a1a1a; 
@@ -15,7 +15,7 @@
         }
         h1 { 
             color: #00FF7F; 
-            font-size: 22px; 
+            font-size: 26px; 
             font-weight: bold;
             margin-bottom: 20px;
         }
@@ -27,26 +27,27 @@
         }
         #system_screen { 
             width: 100%; 
-            height: 300px; 
+            height: 380px; 
             background-color: #2b2b2b; 
-            color: #ffffff;
+            color: #ffffff; 
             border: none;
             border-radius: 5px;
-            padding: 12px;
+            padding: 15px;
             box-sizing: border-box;
             overflow-y: auto;
             text-align: left;
             white-space: pre-wrap;
-            font-size: 13px;
+            font-size: 16px; 
+            line-height: 1.5;
             margin-bottom: 15px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
         #search_bar { 
             width: 100%; 
-            height: 50px; 
+            height: 55px; 
             background-color: #333333;
             color: #ffffff;
-            font-size: 15px; 
+            font-size: 16px; 
             border: 1px solid #555555;
             border-radius: 5px; 
             padding: 0 12px; 
@@ -64,7 +65,7 @@
         }
         button { 
             height: 50px; 
-            font-size: 12px; 
+            font-size: 13px; 
             font-weight: bold; 
             border: none; 
             border-radius: 5px; 
@@ -85,33 +86,22 @@
         }
         
         @media (max-width: 480px) {
-            body {
-                background-color: #111111;
-            }
-            h1 { 
-                font-size: 18px; 
-                color: #00FFFF;
-            }
-            #system_screen { 
-                height: 250px; 
-                font-size: 12px;
-            }
-            button {
-                height: 55px;
-                font-size: 11px;
-            }
+            body { background-color: #111111; }
+            h1 { font-size: 20px; color: #00FFFF; }
+            #system_screen { height: 300px; font-size: 14px; }
+            button { height: 55px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🟢 ЧАТ-ПАНЕЛЬ С ИИ ПОМОЩНИКОМ</h1>
+    <h1>🟢 УМНАЯ ЧАТ-ПАНЕЛЬ С ИИ ПОМОЩНИКОМ</h1>
     
-    <input type="text" id="search_bar" placeholder=" 🤖 Напиши вопрос для ИИ..." onkeypress="handleKeyPress(event)">
+    <input type="text" id="search_bar" placeholder=" 🤖 Спроси у ИИ что угодно или напиши пример (например: 5 + 5)..." onkeypress="handleKeyPress(event)">
     
-    <div id="system_screen">💾 СИСТЕМА ЗАПУЩЕНА В РЕЖИМЕ ЛОКАЛЬНОГО ПОМОЩНИКА
-🧠 ИИ ГОТОВ ОБЩАТЬСЯ ПРЯМО ТУТ
+    <div id="system_screen"><span style="color: #00FF7F;">[СИСТЕМА]: Умный ИИ-помощник успешно запущен!</span>
+<span style="color: #00FF7F;">[ИИ]: Я умею считать математику, болтать, определять время и подбирать случайные ответы.</span>
 
 </div>
     
@@ -119,7 +109,7 @@
         <button class="btn-purple" onclick="triggerAction('привет')">📝 ПРИВЕТСТВИЕ</button>
         <button class="btn-gold" onclick="triggerAction('время')">⏰ УЗНАТЬ ВРЕМЯ</button>
         <button class="btn-green" onclick="triggerAction('рецепт')">🥞 РЕЦЕПТЫ</button>
-        <button class="btn-gray" onclick="triggerAction('выход')">🔴 ВЫКЛЮЧИТЬ</button>
+        <button class="btn-gray" onclick="triggerAction('очистить')">🧹 ОЧИСТИТЬ ЭКРАН</button>
     </div>
 </div>
 
@@ -135,7 +125,12 @@ function handleKeyPress(event) {
     }
 }
 
-// Теперь при нажатии на кнопки текст пишется и ИИ сразу отвечает
+document.addEventListener("DOMContentLoaded", () => {
+    let screen = document.getElementById("system_screen");
+    let now = new Date();
+    screen.innerHTML += `<span style="color: #00FFFF;">[ДАТА]: Сегодня на календаре ${now.toLocaleDateString()}</span>\n\n`;
+});
+
 function triggerAction(actionText) {
     askLocalAI(actionText);
 }
@@ -145,59 +140,116 @@ function getRandomElement(array) {
     return array[index];
 }
 
+function checkMath(text) {
+    let clean = text.replace(/[^0-9+\-*/(). ]/g, "").trim();
+    if (clean.length >= 3 && /[0-9]/.test(clean)) {
+        try {
+            let result = Function(`return (${clean})`)();
+            if (typeof result === "number" && !isNaN(result)) {
+                return result;
+            }
+        } catch(e) { return null; }
+    }
+    return null;
+}
+
 function askLocalAI(query) {
     let screen = document.getElementById("system_screen");
     let text = query.toLowerCase().trim();
     
-    screen.innerHTML += `Вы: ${query}\n`;
+    if (text === "очистить") {
+        screen.innerHTML = "<span style='color: #00FF7F;'>[СИСТЕМА]: Экран успешно очищен!</span>\n\n";
+        return;
+    }
+    
+    screen.innerHTML += `<span style="color: #aaaaaa;">Вы: ${query}</span>\n`;
 
     if (text === "выход") {
-        screen.innerHTML += "🔴 [ИИ]: Закрываю окно системы...\n";
+        screen.innerHTML += "<span style='color: #ff4444;'>🔴 [ИИ]: Закрываю окно системы...</span>\n";
         setTimeout(() => { window.close(); }, 1000);
         scrollScreen();
         return;
     }
 
-    let isTime = ["время", "час", "сколько время"].some(word => text.includes(word));
-    let isChat = ["привет", "как дела", "приветик", "кто ты", "давай поболтаем"].some(word => text.includes(word));
-    let isRecipe = ["рецепт", "приготовить", "кушать", "еда"].some(word => text.includes(word));
+    let mathResult = checkMath(text);
+    if (mathResult !== null) {
+        screen.innerHTML += `<span style="color: #9370DB;">🧮 [ИИ-Калькулятор]: Я посчитал твой пример! Ответ равен: ${mathResult}</span>\n`;
+        screen.innerHTML += "<span style='color: #555555;'>═</span>".repeat(40) + "\n";
+        scrollScreen();
+        return;
+    }
 
-    if (isTime) {
+    let categories = {
+        time: ["время", "час", "сколько", "минут", "дата", "календарь", "день"],
+        chat: ["привет", "дела", "как", "приветик", "хей", "отлично", "хорошо", "ты кто", "зовут"],
+        recipe: ["рецепт", "приготовить", "кушать", "еда", "блинчики", "пицца", "коктейль", "вкусное"],
+        fun: ["скучно", "пошути", "анекдот", "шутка", "смешно", "играть"]
+    };
+
+    let scores = { time: 0, chat: 0, recipe: 0, fun: 0 };
+    let words = text.split(" ");
+
+    for (let word of words) {
+        for (let cat in categories) {
+            if (categories[cat].some(keyword => word.includes(keyword))) {
+                scores[cat]++;
+            }
+        }
+    }
+
+    let maxCat = "none";
+    let maxScore = 0;
+    for (let cat in scores) {
+        if (scores[cat] > maxScore) {
+            maxScore = scores[cat];
+            maxCat = cat;
+        }
+    }
+
+    if (maxCat === "time") {
         let now = new Date();
         let timeStr = now.toLocaleTimeString();
         let answers = [
-            `⏰ [ИИ]: Сейчас на часах: ${timeStr}`,
-            `⏰ [ИИ]: Точное время прямо сейчас: ${timeStr}`,
-            `⏰ [ИИ]: По моим часам уже: ${timeStr}`
+            `⏰ [ИИ]: На моих часах прямо сейчас: ${timeStr}`,
+            `⏰ [ИИ]: Точное время на твоем устройстве: ${timeStr}`,
+            `⏰ [ИИ]: Локальное время системы: ${timeStr}`
         ];
-        screen.innerHTML += getRandomElement(answers) + "\n";
+        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(answers)}</span>\n`;
     }
-    else if (isChat) {
+    else if (maxCat === "chat") {
         let answers = [
-            "🤖 [ИИ]: Привет! Я твой умный локальный агент. Рад пообщаться на каникулах! Как твой день?",
-            "🤖 [ИИ]: Приветик! Я на связи. Чем занимаешься в этот жаркий денек?",
-            "🤖 [ИИ]: Хей! Я готов болтать. Как твои дела?"
+            "🤖 [ИИ]: Привет! Я твой прокачанный ИИ-помощник. Каникулы — лучшее время, как проводишь день?",
+            "🤖 [ИИ]: Приветик! Я на связи и стал гораздо умнее. О чем поболтаем?",
+            "🤖 [ИИ]: Рад, что всё хорошо! Я готов разбирать твои вопросы дальше."
         ];
-        screen.innerHTML += getRandomElement(answers) + "\n";
+        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(answers)}</span>\n`;
     }
-    else if (isRecipe) {
+    else if (maxCat === "recipe") {
         let answers = [
             "🥞 [ИИ]: Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь кружочки!",
-            "🍕 [ИИ]: Рецепт мини-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!",
+            "🍕 [ИИ]: Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!",
             "🍹 [ИИ]: Рецепт коктейля: налей в стакан сок, добавь немного газировки и брось кусочек льда. Освежает в жару!"
         ];
-        screen.innerHTML += getRandomElement(answers) + "\n";
+        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(answers)}</span>\n`;
+    }
+    else if (maxCat === "fun") {
+        let jokes = [
+            "🎈 [ИИ-Шутка]: Почему компьютеры никогда не перегреваются на каникулах? Потому что они открывают много окон!",
+            "🎈 [ИИ-Шутка]: Программист ставит два стакана перед сном. Один с водой — если захочет пить. Второй пустой — если не захочет.",
+            "🎈 [ИИ-Шутка]: Мой искусственный интеллект настолько мощный, что я могу ничего не делать целыми днями!"
+        ];
+        screen.innerHTML += `<span style="color: #9370DB;">${getRandomElement(jokes)}</span>\n`;
     }
     else {
         let unknownAnswers = [
-            `❌ [ИИ]: Хм, команду '${query}' я не распознал. Попробуй спросить про время или рецепт!`,
-            `❌ [ИИ]: Я пока не знаю, что ответить на '${query}'. Напиши что-то вроде 'привет' или 'рецепт'.`,
-            `❌ [ИИ]: Команда '${query}' неизвестна. Попробуй нажать на кнопки внизу!`
+            `❌ [ИИ]: Команду '${query}' я пока не понял. Напиши математический пример (2+2*2) или просто поздоровайся!`,
+            `❌ [ИИ]: Моя база знаний еще расширяется. Попробуй спросить про время, рецепты или попроси пошутить!`,
+            `❌ [ИИ]: Ой, я задумался. Нажми на одну из кнопок внизу, чтобы проверить мои базовые функции!`
         ];
-        screen.innerHTML += getRandomElement(unknownAnswers) + "\n";
+        screen.innerHTML += `<span style="color: #ff4444;">${getRandomElement(unknownAnswers)}</span>\n`;
     }
 
-    screen.innerHTML += "═".repeat(50) + "\n";
+    screen.innerHTML += "<span style='color: #555555;'>═</span>".repeat(40) + "\n";
     scrollScreen();
 }
 
