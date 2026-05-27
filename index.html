@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Миртекс — Ваш надёжный и быстрый ИИ</title>
+    <title>Миртекс — Ваш надёжный ИИ</title>
     <style>
         body { 
             background-color: #17212b; 
@@ -144,42 +144,6 @@
             border-color: #5288c1;
         }
 
-        .modal-overlay {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 10;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-box {
-            background-color: #17212b;
-            width: 80%;
-            max-width: 350px;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            text-align: left;
-        }
-        .modal-box h3 { margin-top: 0; color: #00FF7F; text-align: center; }
-        .modal-box label { font-size: 13px; color: #aaaaaa; display: block; margin-top: 10px; }
-        .modal-box input {
-            width: 100%; height: 38px; background-color: #24303f;
-            color: #ffffff; border: 1px solid #202b36; border-radius: 8px;
-            padding: 0 10px; box-sizing: border-box; margin-top: 5px; font-size: 14px;
-        }
-        .modal-box input:focus { outline: none; border-color: #5288c1; }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-btn { flex: 1; height: 38px; border-radius: 8px; font-size: 14px; font-weight: bold; }
-        .btn-submit { background-color: #5288c1; color: white; }
-        .btn-cancel { background-color: #4b5563; color: white; }
-
-        .login-btn {
-            background-color: #5288c1; color: #ffffff; width: 100%; height: 40px;
-            border-radius: 20px; font-size: 14px; margin-top: 5px;
-        }
-
         .cookie-banner {
             display: none;
             position: absolute;
@@ -211,6 +175,8 @@
             border-radius: 6px;
             font-size: 13px;
             font-weight: bold;
+            border: none;
+            cursor: pointer;
         }
         .cookie-accept { background-color: #2ecc71; color: white; }
         .cookie-reject { background-color: #e74c3c; color: white; }
@@ -220,36 +186,20 @@
 
 <div class="container">
     <div id="cookie_banner" class="cookie-banner">
-        <div class="cookie-text">🍪 Наш сайт использует файлы куки (cookie) для безопасного хранения API-ключей нейросети на вашем устройстве.</div>
+        <div class="cookie-text">🍪 Наш сайт использует файлы куки (cookie) для безопасной работы нейросети на вашем устройстве.</div>
         <div class="cookie-buttons">
             <button class="cookie-btn cookie-reject" onclick="rejectCookies()">Отклонить</button>
             <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Принять</button>
         </div>
     </div>
 
-    <div id="login_modal" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Вход в систему</h3>
-            <label>Ваш Email (Эл. почта):</label>
-            <input type="email" id="login_email" placeholder="example@mail.ru">
-            
-            <label>Пароль:</label>
-            <input type="password" id="login_password" placeholder="•••••">
-            
-            <div class="modal-buttons">
-                <button class="modal-btn btn-submit" onclick="submitEmailLogin()">Войти</button>
-                <button class="modal-btn btn-cancel" onclick="closeLoginModal()">Отмена</button>
-            </div>
-        </div>
-    </div>
-
     <div class="chat-header">
         <div class="chat-title">🤖 Чат-бот «Миртекс»</div>
-        <div class="chat-status"><div class="status-dot"></div><span id="user_name">Гость (Локальный режим)</span></div>
+        <div class="chat-status"><div class="status-dot"></div><span id="chat_mode">Ожидание куки...</span></div>
     </div>
     
     <div id="system_screen">
-        <div class="msg sys-msg">[СИСТЕМА]: Запущена быстрая версия без ограничений.</div>
+        <div class="msg sys-msg">[СИСТЕМА]: Запущена версия с быстрыми командами и ИИ.</div>
         <div class="msg sys-msg">[ИИ]: Привет! Я готов общаться, считать примеры или подсказывать рецепты прямо тут.</div>
     </div>
     
@@ -262,39 +212,30 @@
         </div>
         
         <input type="text" id="search_bar" placeholder="Написать сообщение..." onkeypress="handleKeyPress(event)">
-        
-        <button id="yandex_auth_btn" class="login-btn" onclick="openLoginModal()">🔐 Войти через Email (Полная Версия)</button>
     </div>
 </div>
 
 <script>
-const geminiApiBaseUrlSpaced = "h t t p s : / / g e n e r a t i v e l a n g u a g e . g o o g l e a p i s . c o m / v 1 b e t a / m o d e l s / g e m i n i - 1 . 5 - f l a s h : g e n e r a t i v e C o n t e n t ? k e y =";
+const apiServerUrlSpaced = "h t t p s : / / a p i . p e r m c h a t . r u / v 1 / c h a t / c o m p l e t i o n s";
+const API_KEY = "free-key-safe";
 
-const secretEmailHash = "bmlraXRhQG1pcnRleC5ydQ=="; 
-const secretPasswordHash = "MTIzNDU="; 
-
-let currentUserName = "Гость";
-let isFullVersion = false;
 let cookieAccepted = false;
+let messagesHistory = [
+    { role: "system", content: "Ты — полезный и вежливый ИИ-помощник Миртекс. Отвечай кратко, понятно и только на русском языке." }
+];
 
 function setCookie(name, value) {
     let d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
-    let expires = "expires=" + d.toUTCString();
-    let cookieStr = name + "=" + value + ";";
-    cookieStr += expires + ";path=/;SameSite=Strict;Secure";
-    document.cookie = cookieStr;
+    document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/;SameSite=Strict;Secure";
 }
 
 function getCookie(name) {
     let cname = name + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
+    let ca = document.cookie.split(';');
     for(let i = 0; i < ca.length; i++) {
         let c = ca[i].trim();
-        if (c.indexOf(cname) == 0) {
-            return c.substring(cname.length, c.length);
-        }
+        if (c.indexOf(cname) == 0) return c.substring(cname.length, c.length);
     }
     return "";
 }
@@ -303,8 +244,10 @@ function checkCookieConsent() {
     let consent = getCookie("cookie_consent");
     if (consent === "true") {
         cookieAccepted = true;
+        document.getElementById("chat_mode").innerText = "ИИ активен (Куки приняты)";
     } else if (consent === "false") {
         cookieAccepted = false;
+        document.getElementById("chat_mode").innerText = "Локальный режим (Без ИИ)";
     } else {
         document.getElementById("cookie_banner").style.display = "block";
     }
@@ -314,8 +257,9 @@ function acceptCookies() {
     setCookie("cookie_consent", "true");
     cookieAccepted = true;
     document.getElementById("cookie_banner").style.display = "none";
+    document.getElementById("chat_mode").innerText = "ИИ активен (Куки приняты)";
     let screen = document.getElementById("system_screen");
-    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Использование куки разрешено!</div>`;
+    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Использование куки разрешено! ИИ доступен.</div>`;
     scrollScreen();
 }
 
@@ -323,19 +267,14 @@ function rejectCookies() {
     setCookie("cookie_consent", "false");
     cookieAccepted = false;
     document.getElementById("cookie_banner").style.display = "none";
+    document.getElementById("chat_mode").innerText = "Локальный режим (Без ИИ)";
     let screen = document.getElementById("system_screen");
-    screen.innerHTML += `<div class="msg sys-msg" style="color: #ff4444;">[ПРЕДУПРЕЖДЕНИЕ]: Вы отклонили куки. Gemini недоступен.</div>`;
+    screen.innerHTML += `<div class="msg sys-msg" style="color: #ff4444;">[ПРЕДУПРЕЖДЕНИЕ]: Вы отклонили куки. Онлайн ИИ недоступен.</div>`;
     scrollScreen();
 }
 
-let GEMINI_API_KEY = getCookie("gemini_key");
-
 function getCleanUrl(spacedUrl) {
     return spacedUrl.replace(/\s/g, "");
-}
-
-function parseCustomText(text) {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>');
 }
 
 function checkMath(text) {
@@ -347,59 +286,6 @@ function checkMath(text) {
         } catch(e) { return null; }
     }
     return null;
-}
-
-function openLoginModal() {
-    if (!cookieAccepted) {
-        alert("Для входа примите условия куки! Перезагрузите страницу.");
-        document.getElementById("cookie_banner").style.display = "block";
-        return;
-    }
-    document.getElementById("login_modal").style.display = "flex";
-}
-
-function closeLoginModal() {
-    document.getElementById("login_modal").style.display = "none";
-}
-
-function submitEmailLogin() {
-    let email = document.getElementById("login_email").value.trim();
-    let pass = document.getElementById("login_password").value.trim();
-    
-    if (email === "" || pass === "") {
-        alert("Пожалуйста, заполните все поля!");
-        return;
-    }
-    
-    closeLoginModal();
-    isFullVersion = true;
-    let screen = document.getElementById("system_screen");
-
-    if (btoa(email.toLowerCase()) === secretEmailHash && btoa(pass) === secretPasswordHash) {
-        currentUserName = "Никита";
-        document.getElementById("user_name").innerText = `Никита (Создатель)`;
-        screen.innerHTML += `<div class="msg sys-msg">👑 [СИСТЕМА]: Успешный вход! Рад видеть тебя, Никита!</div>`;
-    } else {
-        currentUserName = email.split("@")[0];
-        document.getElementById("user_name").innerText = `${currentUserName} (Полная версия)`;
-        screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Успешный вход по Email!</div>`;
-    }
-
-    document.getElementById("yandex_auth_btn").style.display = "none";
-    document.getElementById("search_bar").placeholder = "Спроси у Gemini всё что угодно...";
-    screen.innerHTML += `<div class="msg sys-msg">[ИИ]: Соединение с Gemini установлено.</div>`;
-    
-    checkApiKey();
-}
-
-function checkApiKey() {
-    if (!GEMINI_API_KEY && cookieAccepted) {
-        GEMINI_API_KEY = prompt("Введи свой API-ключ Gemini:\nhttps://google.com");
-        if (GEMINI_API_KEY) {
-            GEMINI_API_KEY = GEMINI_API_KEY.trim();
-            setCookie("gemini_key", GEMINI_API_KEY);
-        }
-    }
 }
 
 function handleKeyPress(event) {
@@ -429,6 +315,7 @@ async function startAI(query) {
     let text = query.toLowerCase().trim();
     
     if (text === "очистить") {
+        messagesHistory = [{ role: "system", content: "Ты — полезный и вежливый ИИ-помощник Миртекс. Отвечай кратко, понятно и только на русском языке." }];
         screen.innerHTML = "<div class='msg sys-msg'>[СИСТЕМА]: История чата очищена.</div>";
         return;
     }
@@ -438,75 +325,82 @@ async function startAI(query) {
     let loadingDiv = document.createElement("div");
     loadingDiv.className = "msg ai-msg";
     loadingDiv.style.color = "#00FF7F";
-    loadingDiv.innerHTML = "💬 <i>ИИ печатает...</i>";
+    loadingDiv.innerHTML = "💬 <i>Печатает...</i>";
     screen.appendChild(loadingDiv);
     scrollScreen();
 
-    if (isFullVersion) {
-        await askGemini(query, loadingDiv);
-        return;
-    }
-
-    await delay(2000);
-    loadingDiv.remove();
-
+    // 1. Проверяем калькулятор
     let mathResult = checkMath(text);
     if (mathResult !== null) {
+        await delay(500);
+        loadingDiv.remove();
         screen.innerHTML += `<div class="msg ai-msg">🧮 Ответ равен: <b>${mathResult}</b></div>`;
         scrollScreen();
         return;
     }
 
+    // 2. Проверяем локальные команды на рецепты и время
     let isTime = ["время", "час", "сколько время"].some(word => text.includes(word));
-    let isChat = ["привет", "как дела", "приветик", "кто ты", "болтать"].some(word => text.includes(word));
     let isRecipe = ["рецепт", "приготовить", "кушать", "еда"].some(word => text.includes(word));
 
     if (isTime) {
+        await delay(500);
+        loadingDiv.remove();
         let now = new Date();
         screen.innerHTML += `<div class="msg ai-msg">⏰ Время: <b>${now.toLocaleTimeString()}</b></div>`;
-    } else if (isChat) {
-        let answers = [
-            "🤖 Привет! Я твоя встроенная быстрая копия. Как каникулы?",
-            "🤖 Хей! Я на связи даже без ВПН. О чем поговорим?",
-            "🤖 Приветик! Рад поболтать. Чем занимаешься в этот жаркий день?"
-        ];
-        screen.innerHTML += `<div class="msg ai-msg">${getRandomElement(answers)}</div>`;
-    } else if (isRecipe) {
+        scrollScreen();
+        return;
+    } 
+    
+    if (isRecipe) {
+        await delay(500);
+        loadingDiv.remove();
         let answers = [
             "🥞 Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь кружочки!",
             "🍕 Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!"
         ];
-        screen.innerHTML += `<div class="msg ai-msg">${getRandomElement(answers)}</div>`;
-    } else {
-        screen.innerHTML += `<div class="msg ai-msg">❌ В быстром режиме я не знаю команду '${query}'. Войдите через Email внизу экрана!</div>`;
+        screen.innerHTML += `<div class="msg ai-msg">🤖 ${getRandomElement(answers)}</div>`;
+        scrollScreen();
+        return;
     }
-    scrollScreen();
-}
 
-async function askGemini(query, loadingDiv) {
-    let screen = document.getElementById("system_screen");
+    // 3. Если это не команда, отправляем онлайн-запрос ИИ (если куки приняты)
+    if (!cookieAccepted) {
+        loadingDiv.remove();
+        screen.innerHTML += `<div class="msg ai-msg">❌ В локальном режиме я не знаю команду '${query}'. Примите куки для онлайн ИИ!</div>`;
+        scrollScreen();
+        return;
+    }
+
+    messagesHistory.push({ role: "user", content: query });
+
     try {
-        let url = getCleanUrl(geminiApiBaseUrlSpaced) + GEMINI_API_KEY;
-        let response = await fetch(url, {
+        let cleanUrl = getCleanUrl(apiServerUrlSpaced);
+        let response = await fetch(cleanUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + API_KEY
+            },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `Ты — ИИ Миртекс. Собеседника зовут ${currentUserName}. Отвечай коротко. Вопрос: ` + query }] }]
+                model: "gpt-3.5-turbo",
+                messages: messagesHistory
             })
         });
 
         let data = await response.json();
-        if (loadingDiv) loadingDiv.remove();
+        loadingDiv.remove();
 
-        if (data && data.candidates && data.candidates[0].content) {
-            let aiResult = data.candidates[0].content.parts[0].text.trim();
-            screen.innerHTML += `<div class="msg ai-msg">🤖 ${parseCustomText(aiResult)}</div>`;
+        if (data && data.choices && data.choices[0].message) {
+            let aiResult = data.choices[0].message.content.trim();
+            screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
+            messagesHistory.push({ role: "assistant", content: aiResult });
         } else {
-            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка структуры ответа от Gemini API.</div>`;
+            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка: Неверный ответ от ИИ.</div>`;
         }
     } catch (error) {
-        if (loadingDiv) loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg" style='color: #ff4444;'>❌ Ошибка соединения. Проверь ВПН!</div>`;
+        loadingDiv.remove();
+        screen.innerHTML += `<div class="msg ai-msg" style='color: #ff4444;'>❌ Ошибка сети. Проверьте интернет.</div>`;
     }
     scrollScreen();
 }
