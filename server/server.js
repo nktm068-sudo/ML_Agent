@@ -21,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
         const { query } = req.body;
         
         // Переключаемся на правильный URL для чат-моделей Qwen
-        const cleanUrl = getCleanUrl("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions");
+        const cleanUrl = ("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions");
 
         
         const response = await fetch(cleanUrl, {
@@ -43,8 +43,8 @@ app.post('/api/chat', async (req, res) => {
         const data = await response.json();
         
         // Отправляем обратно сайту чистый текст ответа
-        if (data && data.choices && data.choices[0] && data.choices[0].message) {
-            res.json({ generated_text: data.choices[0].message.content });
+        if (data && data.choices && data.choices.message) {
+    res.json({ generated_text: data.choices.message.content });
         } else {
             res.status(500).json({ error: "Ошибка структуры ответа Hugging Face", details: data });
         }
