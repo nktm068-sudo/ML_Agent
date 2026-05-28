@@ -94,8 +94,8 @@ async function initAI() {
             const cleanUrl = getCleanUrl(transformersLibraryUrlSpaced);
             const { pipeline } = await import(cleanUrl);
             
-            // Запускаем локальную модель Qwen
-            generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat');
+            // Запускаем локальную модель Яндекс.GPT
+            generator = await pipeline('text-generation', 'Xenova/yandex-gpt-6b-lite');
             
             document.getElementById("chat_mode").innerText = "ИИ активен локально";
             document.getElementById("chat_mode").style.color = "#00FF7F";
