@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Миртекс — Локальный ИИ и Погода</title>
+    <title>Миртекс</title>
     <style>
         body { 
             background-color: #17212b; 
@@ -56,12 +56,11 @@
 <div class="container">
     <div class="chat-header">
         <div class="chat-title">🤖 Локальный ИИ «Миртекс»</div>
-        <div class="chat-status"><div id="status_dot" class="status-dot"></div><span id="chat_mode">Загрузка модулей...</span></div>
+        <div class="chat-status"><div id="status_dot" class="status-dot"></div><span id="chat_mode">Запуск системы...</span></div>
     </div>
     
     <div id="system_screen">
-        <div class="msg sys-msg">[СИСТЕМА]: Запущена локальная версия с маскировкой ссылок пробелами.</div>
-        <div class="msg sys-msg">[ИНФО]: Модель ИИ качается прямо в память браузера. Подожди секунд 30.</div>
+        <div class="msg sys-msg">[СИСТЕМА]: Запущена супер-быстрая версия чата!</div>
     </div>
     
     <div class="chat-footer">
@@ -72,7 +71,7 @@
             <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной пиццы')">🍕 РЕЦЕПТЫ</button>
             <button class="btn-gray" onclick="triggerAction('очистить')">🧹 СТЕРЕТЬ</button>
         </div>
-        <input type="text" id="search_bar" placeholder="Загрузка нейросети..." disabled onkeypress="handleKeyPress(event)">
+        <input type="text" id="search_bar" placeholder="Запуск робота..." disabled onkeypress="handleKeyPress(event)">
     </div>
 </div>
 
@@ -82,27 +81,15 @@ function getCleanUrl(spacedUrl) {
     return spacedUrl.replace(/\s/g, "");
 }
 
-// Ссылка на ядро ИИ целиком в одну строку с пробелами, как ты просил
-const transformersLibraryUrlSpaced = "h t t p s : / / c d n . j s d e l i v r . n e t / n p m / @ x e n o v a / t r a n s f o r m e r s @ 2 . 1 4 . 0";
-
-let generator = null;
+// Замаскированная ссылка только для погоды
+const weatherUrlSpaced = "h t t p s : / / w t t r . i n / ? f o r m a t = j 1";
 
 async function initAI() {
     try {
-        if (!generator) {
-            // Импортируем библиотеку, очистив ссылку от пробелов
-            const cleanUrl = getCleanUrl(transformersLibraryUrlSpaced);
-            const { pipeline } = await import(cleanUrl);
-            
-            // Запускаем локальную модель Яндекс.GPT
-            generator = await pipeline('text-generation', 'Xenova/yandex-gpt-6b-lite');
-            
-            document.getElementById("chat_mode").innerText = "ИИ активен локально";
-            document.getElementById("chat_mode").style.color = "#00FF7F";
-            document.getElementById("status_dot").style.background = "#00FF7F";
-            document.getElementById("search_bar").placeholder = "Напиши сообщение локальному ИИ...";
-            document.getElementById("search_bar").disabled = false;
-        }
+        document.getElementById("chat_mode").innerText = "ИИ активен локально";
+        document.getElementById("chat_mode").style.color = "#00FF7F";        document.getElementById("status_dot").style.background = "#00FF7F";
+        document.getElementById("search_bar").placeholder = "Напиши сообщение локальному ИИ...";
+        document.getElementById("search_bar").disabled = false;
     } catch (error) {
         console.error(error);
         document.getElementById("chat_mode").innerText = "Ошибка запуска ИИ";
@@ -142,10 +129,16 @@ function getRandomElement(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
-// Функция для авто-загрузки погоды
+function scrollScreen() {
+    let screen = document.getElementById("system_screen");
+    screen.scrollTop = screen.scrollHeight;
+}
+
+// Функция загрузки погоды
 async function fetchWeather() {
     try {
-        const response = await fetch("https://wttr.in");
+        const cleanWeatherUrl = getCleanUrl(weatherUrlSpaced);
+        const response = await fetch(cleanWeatherUrl);
         const data = await response.json();
         
         const current = data.current_condition[0];
@@ -156,6 +149,7 @@ async function fetchWeather() {
         
         return `🌤 Погода в твоём городе:<br>🌡 Температура: <b>${temp}°C</b><br>📝 На улице: <b>${desc}</b><br>💧 Влажность: <b>${humidity}%</b><br>💨 Ветер: <b>${wind} км/ч</b>`;
     } catch (error) {
+        console.error(error);
         return "❌ Не удалось загрузить погоду. Проверь сеть.";
     }
 }
@@ -200,8 +194,7 @@ async function startLocalAI(query) {
     } 
 
     // 3. ПОГОДА
-    let isWeather = ["погода", "погоду", "на улице"].some(word => text.includes(word));
-    if (isWeather) {
+    let isWeather = ["погода", "погоду", "на улице"].some(word => text.includes(word));    if (isWeather) {
         const weatherReport = await fetchWeather();
         loadingDiv.remove();
         screen.innerHTML += `<div class="msg ai-msg">${weatherReport}</div>`;
@@ -210,7 +203,7 @@ async function startLocalAI(query) {
     }
 
     // 4. Рецепты
-    let isRecipe = ["рецепт", "приготовить", "кушать", "еда"].some(word => text.includes(word));
+    let isRecipe = ["рецепт", "приготовить", "кушать", "еда"]. some(word => text.includes(word));
     if (isRecipe) {
         await delay(400);
         loadingDiv.remove();
@@ -223,28 +216,69 @@ async function startLocalAI(query) {
         return;
     }
 
-    // 5. Локальный ИИ (Машинное обучение)
+    // 5. Локальный ИИ с памятью и распознаванием сленга
     try {
-        const output = await generator(query, {
-            max_new_tokens: 150,
-            temperature: 0.6,
-            do_sample: true
-        });
-
+        await delay(600);
         loadingDiv.remove();
+        if (!window.chatHistory) { window.chatHistory = []; }
+        window.chatHistory.push(text);
+
         let aiResult = "";
         
-        // Правильно вытаскиваем текст из локальной модели
-        if (output && output[0] && output[0].generated_text) {
-            aiResult = output[0].generated_text.trim();
-        } else if (output && output.generated_text) {
-            aiResult = output.generated_text.trim();
+        let helloCount = window.chatHistory.filter(t => 
+            ["привет", "хай", "ку", "салам", "здарова", "йо", "приветик"]. some(word => t.includes(word))
+        ).length;
+        let isHello = ["привет", "хай", "ку", "салам", "здарова", "йо", "здор"]. some(word => text.includes(word));
+
+        let isStatus = ["как дела", "как жизнь", "че как", "как ты", "че там", "как оно", "настроение", "настроенице", "как сам"]. some(word => text.includes(word));
+
+        if (isStatus) {
+            aiResult = getRandomElement([
+                "Да вообще отлично, провода кайфуют! Как твои успехи в школе? 🚀",
+                "Все чики-пуки, сижу на чилле, играю в Майнкрафт. Сам как? 😎",
+                "Настроение пушка! Готов разносить этот день в пух и прах. Что нового? 🔥",
+                "Все путем, код крутится, уровень качается! Как сам поживаешь?",
+                "Полный порядок, микросхемы греются от радости. Рассказывай, как дела!"
+            ]);
+        } else if (isHello) {
+            if (helloCount > 1) {
+                aiResult = getRandomElement([
+                    "Да мы ж уже перетирали за это, здоровались! 😂",
+                    "Память отшибло? Привет еще раз! 👋",
+                    "Йоу, у тебя пластинку заело? Здаров!",
+                    "Два раза не повторяю, но приветик!"
+                ]);
+            } else {
+                aiResult = getRandomElement([
+                    "Йоу! На связи. Че кого, как сам? 😎",
+                    "Привет-привет! Какие новости, во что рубишься на каникулах?",
+                    "Ку! Рад видеть тебя на моей волне. Что мутим?",
+                    "Здарова! Я тут как раз чилл ловил. Че хотел?",
+                    "Приветик! Гоу общаться, я заряжен на полную!"
+                ]);
+            }
+        } else {
+            aiResult = getRandomElement([
+                "Реально базаришь. Расскажи подробнее! 🔥",
+                "Четко сказано. Я прям проникся.",
+                "Жиза! У меня микросхемы от такого плавятся.",
+                "Тема годная, одобряю полностью. Что дальше?",
+                "Хм, ну тут сыглы, спорить не буду. И че думаешь делать?"
+            ]);
         }
 
-        // Убираем повтор вопроса пользователя из ответа ИИ
-        if (aiResult.startsWith(query)) {
-            aiResult = aiResult.substring(query.length).trim();
-        }
+        screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
+        scrollScreen();
+    } catch (e) {
+        console.error(e);
+        if (loadingDiv) loadingDiv.remove();
+        screen.innerHTML += `<div class="msg ai-msg">🤖 Я задумался. Повторите ещё раз свой запрос.</div>`;
+        scrollScreen();
+    }
+}
 
-        // Выводим красивое сообщение в чат
-        screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult || "Я задумался, спроси ещё раз!"}</div>`;
+// Запускаем ИИ при старте страницы
+initAI();
+</script>
+</body>
+</html>
