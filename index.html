@@ -5,51 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Миртекс</title>
     <style>
-        body { 
-            background-color: #17212b; 
-            color: #ffffff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
-        }
-        .container {
-            width: 100%; max-width: 550px; height: 100vh; background-color: #0e1621; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .chat-header {
-            background-color: #17212b; padding: 10px 20px; text-align: left; display: flex; flex-direction: column; border-bottom: 1px solid #101921;
-        }
-        .chat-title { font-size: 18px; font-weight: bold; color: #ffffff; }
-        .chat-status { font-size: 13px; color: #f1c40f; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
-        .status-dot { width: 8px; height: 8px; background-color: #f1c40f; border-radius: 50%; }
-        #system_screen { 
-            flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;
-        }
-        .msg {
-            max-width: 75%; padding: 10px 14px; border-radius: 15px; font-size: 15px; line-height: 1.4; word-wrap: break-word; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        .user-msg { background-color: #2b5278; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai-msg { background-color: #182533; color: #ffffff; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .sys-msg { background-color: #22313f; color: #4cc5f0; align-self: center; text-align: center; font-size: 13px; border-radius: 15px; padding: 6px 12px; max-width: 90%; }
-        .chat-footer { background-color: #17212b; padding: 12px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #101921; }
-        
-        .frame { 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
-        }
-        button { 
-            height: 38px; font-size: 10px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: #ffffff;
-            display: flex; align-items: center; justify-content: center; transition: background 0.2s;
-        }
-        .btn-purple { background-color: #6c5ce7; }
-        .btn-gold { background-color: #f1c40f; color: #000000; }
-        .btn-blue { background-color: #3498db; }
-        .btn-green { background-color: #2ecc71; }
-        .btn-gray { background-color: #4b5563; }
-        button:hover { opacity: 0.9; }
+    /* 1. Общие настройки для всего экрана */
+    body { 
+        background-color: #17212b; 
+        color: #ffffff; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
+    }
+    
+    /* 2. Контейнер чата (на компе узкий, а на телефоне растянется на весь экран!) */
+    .container {
+        width: 100%; max-width: 550px; height: 100vh; background-color: #0e1621; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    
+    /* 3. Шапка сайта (сделали текст крупнее) */
+    .chat-header {
+        background-color: #17212b; padding: 15px 20px; text-align: left; display: flex; flex-direction: column; border-bottom: 1px solid #101921;
+    }
+    .chat-title { font-size: 22px; font-weight: bold; color: #ffffff; }
+    .chat-status { font-size: 15px; color: #00FF7F; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+    .status-dot { width: 10px; height: 10px; background-color: #00FF7F; border-radius: 50%; }
+    
+    /* 4. Экран чата (Шрифт стал большим и жирным!) */
+    #system_screen { 
+        flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth;
+    }
+    .msg {
+        max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 20px; font-weight: bold; line-height: 1.4; word-wrap: break-word; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .user-msg { background-color: #2b5278; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .ai-msg { background-color: #182533; color: #ffffff; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .sys-msg { background-color: #22313f; color: #4cc5f0; align-self: center; text-align: center; font-size: 16px; border-radius: 15px; padding: 8px 14px; max-width: 90%; }
+    
+    /* 5. Подвал чата (Кнопки и строка ввода) */
+    .chat-footer { background-color: #17212b; padding: 15px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #101921; }
+    
+    /* Сетка кнопок (на телефоне они перестроятся в два ряда, чтобы удобно нажимать пальцами!) */
+    .frame { 
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    
+    /* Крупные кнопки для мобилки */
+    button { 
+        height: 48px; font-size: 12px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: #ffffff;
+        display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+    }
+    .btn-purple { background-color: #6c5ce7; }
+    .btn-gold { background-color: #f1c40f; color: #000000; }
+    .btn-blue { background-color: #3498db; }
+    .btn-green { background-color: #2ecc71; }
+    .btn-gray { background-color: #4b5563; }
+    button:hover { opacity: 0.9; }
 
-        #search_bar { 
-            width: 100%; height: 45px; background-color: #24303f; color: #ffffff; font-size: 15px; border: 1px solid #202b36; border-radius: 20px; padding: 0 15px; box-sizing: border-box;
-        }
-        #search_bar:focus { outline: none; border-color: #5288c1; }
-    </style>
+    /* Большая строка ввода текста */
+    #search_bar { 
+        width: 100%; height: 55px; background-color: #24303f; color: #ffffff; font-size: 18px; font-weight: bold; border: 1px solid #202b36; border-radius: 25px; padding: 0 20px; box-sizing: border-box;
+    }
+    #search_bar:focus { outline: none; border-color: #5288c1; }
+
+    /* 🔥 МАГИЯ МОБИЛЬНОЙ АДАПТАЦИИ: если экран узкий (как на телефоне) */
+    @media (max-width: 480px) {
+        .chat-title { font-size: 18px; }
+        .msg { font-size: 16px; max-width: 85%; } /* На телефоне делаем чуть-чуть компактнее, чтобы влезало */
+        .frame { grid-template-columns: repeat(2, 1fr); } /* Кнопки встают по 2 штуки в ряд, а не по 3! */
+        #search_bar { height: 50px; font-size: 16px; }
+    }
+</style>
 </head>
 <body>
 
