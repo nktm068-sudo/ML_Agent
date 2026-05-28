@@ -3,278 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Миртекс — Ваш надёжный ИИ</title>
+    <title>Миртекс — Локальный ИИ и Погода</title>
     <style>
         body { 
             background-color: #17212b; 
             color: #ffffff; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
         }
         .container {
-            width: 100%;
-            max-width: 550px;
-            height: 100vh;
-            background-color: #0e1621; 
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            width: 100%; max-width: 550px; height: 100vh; background-color: #0e1621; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         .chat-header {
-            background-color: #17212b;
-            padding: 10px 20px;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            border-bottom: 1px solid #101921;
+            background-color: #17212b; padding: 10px 20px; text-align: left; display: flex; flex-direction: column; border-bottom: 1px solid #101921;
         }
-        .chat-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffffff;
-        }
-        .chat-status {
-            font-size: 13px;
-            color: #00FF7F;
-            margin-top: 2px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00FF7F;
-            border-radius: 50%;
-        }
+        .chat-title { font-size: 18px; font-weight: bold; color: #ffffff; }
+        .chat-status { font-size: 13px; color: #f1c40f; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+        .status-dot { width: 8px; height: 8px; background-color: #f1c40f; border-radius: 50%; }
         #system_screen { 
-            flex: 1;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            scroll-behavior: smooth;
+            flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;
         }
         .msg {
-            max-width: 75%;
-            padding: 10px 14px;
-            border-radius: 15px;
-            font-size: 15px;
-            line-height: 1.4;
-            word-wrap: break-word;
-            display: inline-block;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            max-width: 75%; padding: 10px 14px; border-radius: 15px; font-size: 15px; line-height: 1.4; word-wrap: break-word; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
-        .user-msg {
-            background-color: #2b5278;
-            color: #ffffff;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .ai-msg {
-            background-color: #182533;
-            color: #ffffff;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .sys-msg {
-            background-color: #22313f;
-            color: #4cc5f0;
-            align-self: center;
-            text-align: center;
-            font-size: 13px;
-            border-radius: 15px;
-            padding: 6px 12px;
-            max-width: 90%;
-        }
-        .chat-footer {
-            background-color: #17212b;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            border-top: 1px solid #101921;
-        }
+        .user-msg { background-color: #2b5278; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai-msg { background-color: #182533; color: #ffffff; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .sys-msg { background-color: #22313f; color: #4cc5f0; align-self: center; text-align: center; font-size: 13px; border-radius: 15px; padding: 6px 12px; max-width: 90%; }
+        .chat-footer { background-color: #17212b; padding: 12px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #101921; }
+        
         .frame { 
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
         }
         button { 
-            height: 38px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
+            height: 38px; font-size: 10px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: #ffffff;
+            display: flex; align-items: center; justify-content: center; transition: background 0.2s;
         }
         .btn-purple { background-color: #6c5ce7; }
         .btn-gold { background-color: #f1c40f; color: #000000; }
+        .btn-blue { background-color: #3498db; }
         .btn-green { background-color: #2ecc71; }
         .btn-gray { background-color: #4b5563; }
         button:hover { opacity: 0.9; }
 
         #search_bar { 
-            width: 100%; 
-            height: 45px; 
-            background-color: #24303f;
-            color: #ffffff;
-            font-size: 15px; 
-            border: 1px solid #202b36;
-            border-radius: 20px; 
-            padding: 0 15px; 
-            box-sizing: border-box;
+            width: 100%; height: 45px; background-color: #24303f; color: #ffffff; font-size: 15px; border: 1px solid #202b36; border-radius: 20px; padding: 0 15px; box-sizing: border-box;
         }
-        #search_bar:focus {
-            outline: none;
-            border-color: #5288c1;
-        }
-
-        .cookie-banner {
-            display: none;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #182533;
-            border-top: 2px solid #5288c1;
-            padding: 15px 20px;
-            box-sizing: border-box;
-            z-index: 20;
-            text-align: left;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-        }
-        .cookie-text {
-            font-size: 14px;
-            line-height: 1.4;
-            color: #ffffff;
-            margin-bottom: 12px;
-        }
-        .cookie-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        .cookie-btn {
-            height: 34px;
-            padding: 0 20px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-        .cookie-accept { background-color: #2ecc71; color: white; }
-        .cookie-reject { background-color: #e74c3c; color: white; }
+        #search_bar:focus { outline: none; border-color: #5288c1; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="cookie_banner" class="cookie-banner">
-        <div class="cookie-text">🍪 Наш сайт использует файлы куки (cookie) для безопасной работы нейросети на вашем устройстве.</div>
-        <div class="cookie-buttons">
-            <button class="cookie-btn cookie-reject" onclick="rejectCookies()">Отклонить</button>
-            <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Принять</button>
-        </div>
-    </div>
-
     <div class="chat-header">
-        <div class="chat-title">🤖 Чат-бот «Миртекс»</div>
-        <div class="chat-status"><div class="status-dot"></div><span id="chat_mode">Ожидание куки...</span></div>
+        <div class="chat-title">🤖 Локальный ИИ «Миртекс»</div>
+        <div class="chat-status"><div id="status_dot" class="status-dot"></div><span id="chat_mode">Загрузка модулей...</span></div>
     </div>
     
     <div id="system_screen">
-        <div class="msg sys-msg">[СИСТЕМА]: Запущена версия с быстрыми командами и ИИ.</div>
-        <div class="msg sys-msg">[ИИ]: Привет! Я готов общаться, считать примеры или подсказывать рецепты прямо тут.</div>
+        <div class="msg sys-msg">[СИСТЕМА]: Запущена локальная версия с маскировкой ссылок пробелами.</div>
+        <div class="msg sys-msg">[ИНФО]: Модель ИИ качается прямо в память браузера. Подожди секунд 30.</div>
     </div>
     
     <div class="chat-footer">
         <div class="frame">
             <button class="btn-purple" onclick="triggerAction('Привет! Как дела?')">📝 БОЛТАТЬ</button>
-            <button class="btn-gold" onclick="triggerAction('Который сейчас час?')">⏰ ВРЕМЯ</button>
+            <button class="btn-gold" onclick="triggerAction('время')">⏰ ВРЕМЯ</button>
+            <button class="btn-blue" onclick="triggerAction('погода')">🌤 ПОГОДА</button>
             <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной пиццы')">🍕 РЕЦЕПТЫ</button>
             <button class="btn-gray" onclick="triggerAction('очистить')">🧹 СТЕРЕТЬ</button>
         </div>
-        
-        <input type="text" id="search_bar" placeholder="Написать сообщение..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="search_bar" placeholder="Загрузка нейросети..." disabled onkeypress="handleKeyPress(event)">
     </div>
 </div>
 
 <script>
-// Твоя новая рабочая ссылка на Render с пробелами
-const renderServerUrlSpaced = "h t t p s : / / m l - a g e n t - i j h t . o n r e n d e r . c o m / a p i / c h a t";
-
-let cookieAccepted = false;
-let messagesHistory = [
-    { role: "system", content: "Ты — полезный и вежливый ИИ-помощник Миртекс. Отвечай кратко, понятно и только на русском языке." }
-];
-
-function setCookie(name, value) {
-    let d = new Date();
-    d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
-    document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/;SameSite=Strict;Secure";
-}
-
-function getCookie(name) {
-    let cname = name + "=";
-    let ca = document.cookie.split(';');
-    for(let i = 0; i < ca.length; i++) {
-        let c = ca[i].trim();
-        if (c.indexOf(cname) == 0) return c.substring(cname.length, c.length);
-    }
-    return "";
-}
-
-function checkCookieConsent() {
-    let consent = getCookie("cookie_consent");
-    if (consent === "true") {
-        cookieAccepted = true;
-        document.getElementById("chat_mode").innerText = "ИИ активен через Render";
-    } else if (consent === "false") {
-        cookieAccepted = false;
-        document.getElementById("chat_mode").innerText = "Локальный режим (Без ИИ)";
-    } else {
-        document.getElementById("cookie_banner").style.display = "block";
-    }
-}
-
-function acceptCookies() {
-    setCookie("cookie_consent", "true");
-    cookieAccepted = true;
-    document.getElementById("cookie_banner").style.display = "none";
-    document.getElementById("chat_mode").innerText = "ИИ активен через Render";
-    let screen = document.getElementById("system_screen");
-    screen.innerHTML += `<div class="msg sys-msg">[СИСТЕМА]: Использование куки разрешено! Онлайн ИИ активирован.</div>`;
-    scrollScreen();
-}
-
-function rejectCookies() {
-    setCookie("cookie_consent", "false");
-    cookieAccepted = false;
-    document.getElementById("cookie_banner").style.display = "none";
-    document.getElementById("chat_mode").innerText = "Локальный режим (Без ИИ)";
-    let screen = document.getElementById("system_screen");
-    screen.innerHTML += `<div class="msg sys-msg" style="color: #ff4444;">[ПРЕДУПРЕЖДЕНИЕ]: Вы отклонили куки. Онлайн ИИ отключен.</div>`;
-    scrollScreen();
-}
-
+// Функция для удаления пробелов из замаскированных ссылок
 function getCleanUrl(spacedUrl) {
     return spacedUrl.replace(/\s/g, "");
+}
+
+// Ссылка на ядро ИИ целиком в одну строку с пробелами, как ты просил
+const transformersLibraryUrlSpaced = "h t t p s : / / c d n . j s d e l i v r . n e t / n p m / @ x e n o v a / t r a n s f o r m e r s @ 2 . 1 4 . 0";
+
+let generator = null;
+
+async function initAI() {
+    try {
+        if (!generator) {
+            // Импортируем библиотеку, очистив ссылку от пробелов
+            const cleanUrl = getCleanUrl(transformersLibraryUrlSpaced);
+            const { pipeline } = await import(cleanUrl);
+            
+            // Запускаем локальную модель Qwen
+            generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat');
+            
+            document.getElementById("chat_mode").innerText = "ИИ активен локально";
+            document.getElementById("chat_mode").style.color = "#00FF7F";
+            document.getElementById("status_dot").style.background = "#00FF7F";
+            document.getElementById("search_bar").placeholder = "Напиши сообщение локальному ИИ...";
+            document.getElementById("search_bar").disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        document.getElementById("chat_mode").innerText = "Ошибка запуска ИИ";
+    }
 }
 
 function checkMath(text) {
@@ -294,12 +126,12 @@ function handleKeyPress(event) {
         let query = input.value.trim();
         if (query === "") return;
         input.value = ""; 
-        startAI(query);
+        startLocalAI(query);
     }
 }
 
 function triggerAction(actionText) {
-    startAI(actionText);
+    startLocalAI(actionText);
 }
 
 function delay(ms) {
@@ -310,7 +142,25 @@ function getRandomElement(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
-async function startAI(query) {
+// Функция для авто-загрузки погоды
+async function fetchWeather() {
+    try {
+        const response = await fetch("https://wttr.in");
+        const data = await response.json();
+        
+        const current = data.current_condition[0];
+        const temp = current.temp_C;
+        const desc = current.lang_ru ? current.lang_ru[0].value : current.weatherDesc[0].value;
+        const humidity = current.humidity;
+        const wind = current.windspeedKmph;
+        
+        return `🌤 Погода в твоём городе:<br>🌡 Температура: <b>${temp}°C</b><br>📝 На улице: <b>${desc}</b><br>💧 Влажность: <b>${humidity}%</b><br>💨 Ветер: <b>${wind} км/ч</b>`;
+    } catch (error) {
+        return "❌ Не удалось загрузить погоду. Проверь сеть.";
+    }
+}
+
+async function startLocalAI(query) {
     let screen = document.getElementById("system_screen");
     let text = query.toLowerCase().trim();
     
@@ -324,38 +174,48 @@ async function startAI(query) {
     let loadingDiv = document.createElement("div");
     loadingDiv.className = "msg ai-msg";
     loadingDiv.style.color = "#00FF7F";
-    loadingDiv.innerHTML = "💬 <i>Печатает...</i>";
+    loadingDiv.innerHTML = "🧠 <i>Миртекс обрабатывает запрос...</i>";
     screen.appendChild(loadingDiv);
     scrollScreen();
 
     // 1. Калькулятор
     let mathResult = checkMath(text);
     if (mathResult !== null) {
-        await delay(500);
+        await delay(400);
         loadingDiv.remove();
         screen.innerHTML += `<div class="msg ai-msg">🧮 Ответ равен: <b>${mathResult}</b></div>`;
         scrollScreen();
         return;
     }
 
-    // 2. Локальные команды (Рецепты / Время)
+    // 2. Время
     let isTime = ["время", "час", "сколько время"].some(word => text.includes(word));
-    let isRecipe = ["рецепт", "приготовить", "кушать", "еда"].some(word => text.includes(word));
-
     if (isTime) {
-        await delay(500);
+        await delay(400);
         loadingDiv.remove();
         let now = new Date();
-        screen.innerHTML += `<div class="msg ai-msg">⏰ Время: <b>${now.toLocaleTimeString()}</b></div>`;
+        screen.innerHTML += `<div class="msg ai-msg">⏰ Время на часах: <b>${now.toLocaleTimeString()}</b></div>`;
         scrollScreen();
         return;
     } 
-    
+
+    // 3. ПОГОДА
+    let isWeather = ["погода", "погоду", "на улице"].some(word => text.includes(word));
+    if (isWeather) {
+        const weatherReport = await fetchWeather();
+        loadingDiv.remove();
+        screen.innerHTML += `<div class="msg ai-msg">${weatherReport}</div>`;
+        scrollScreen();
+        return;
+    }
+
+    // 4. Рецепты
+    let isRecipe = ["рецепт", "приготовить", "кушать", "еда"].some(word => text.includes(word));
     if (isRecipe) {
-        await delay(500);
+        await delay(400);
         loadingDiv.remove();
         let answers = [
-            "🥞 Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь кружочки!",
+            "🥞 Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь на сковородке кружочки!",
             "🍕 Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!"
         ];
         screen.innerHTML += `<div class="msg ai-msg">🤖 ${getRandomElement(answers)}</div>`;
@@ -363,59 +223,28 @@ async function startAI(query) {
         return;
     }
 
-    // 3. Запрос на сервер Render
-    if (!cookieAccepted) {
-        loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg">❌ В локальном режиме онлайн ИИ недоступен. Примите куки!</div>`;
-        scrollScreen();
-        return;
-    }
-
+    // 5. Локальный ИИ (Машинное обучение)
     try {
-        let cleanUrl = getCleanUrl(renderServerUrlSpaced);
-        let response = await fetch(cleanUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: query })
+        const output = await generator(query, {
+            max_new_tokens: 150,
+            temperature: 0.6,
+            do_sample: true
         });
 
-        let data = await response.json();
         loadingDiv.remove();
-
         let aiResult = "";
-        if (data && data.generated_text) {
-            aiResult = data.generated_text.trim();
-        } else if (Array.isArray(data) && data[0] && data[0].generated_text) {
-            aiResult = data[0].generated_text.trim();
+        
+        // Правильно вытаскиваем текст из локальной модели
+        if (output && output[0] && output[0].generated_text) {
+            aiResult = output[0].generated_text.trim();
+        } else if (output && output.generated_text) {
+            aiResult = output.generated_text.trim();
         }
 
-        if (aiResult) {
-            aiResult = aiResult.replace("Ты — полезный ИИ-помощник Миртекс. Отвечай кратко на русском языке. Вопрос: " + query, "").trim();
-            screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
-        } else if (data && data.error) {
-            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка сервера Render: ${data.error}</div>`;
-        } else {
-            screen.innerHTML += `<div class="msg ai-msg">❌ Ошибка: Неверный формат ответа.</div>`;
+        // Убираем повтор вопроса пользователя из ответа ИИ
+        if (aiResult.startsWith(query)) {
+            aiResult = aiResult.substring(query.length).trim();
         }
-    } catch (error) {
-        loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg" style='color: #ff4444;'>❌ Ошибка соединения с сервером Render.</div>`;
-    }
-    scrollScreen();
-}
 
-function scrollScreen() {
-    let screen = document.getElementById("system_screen");
-    screen.scrollTop = screen.scrollHeight;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    let screen = document.getElementById("system_screen");
-    let now = new Date();
-    screen.innerHTML = `<div class="msg sys-msg">[ДАТА]: ${now.toLocaleDateString()}</div>` + screen.innerHTML;
-    checkCookieConsent();
-});
-</script>
-
-</body>
-</html>
+        // Выводим красивое сообщение в чат
+        screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult || "Я задумался, спроси ещё раз!"}</div>`;
