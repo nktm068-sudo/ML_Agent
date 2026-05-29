@@ -89,7 +89,7 @@
             <button class="btn-purple" onclick="triggerAction('Привет! Как дела?')">📝 БОЛТАТЬ</button>
             <button class="btn-gold" onclick="triggerAction('время')">⏰ ВРЕМЯ</button>
             <button class="btn-blue" onclick="triggerAction('погода')">🌤 ПОГОДА</button>
-            <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной пиццы')">🍕 РЕЦЕПТЫ</button>
+            <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной еды')">🍕 РЕЦЕПТЫ</button>
             <button class="btn-gray" onclick="triggerAction('очистить')">🧹 СТЕРЕТЬ</button>
         </div>
         <input type="text" id="search_bar" placeholder="Запуск робота..." disabled onkeypress="handleKeyPress(event)">
@@ -97,25 +97,11 @@
 </div>
 
 <script>
-// Функция для удаления пробелов из замаскированных ссылок
 function getCleanUrl(spacedUrl) {
     return spacedUrl.replace(/\s/g, "");
 }
 
-// Замаскированная ссылка только для погоды
 const weatherUrlSpaced = "h t t p s : / / w t t r . i n / ? f o r m a t = j 1";
-
-async function initAI() {
-    try {
-        document.getElementById("chat_mode").innerText = "ИИ активен локально";
-        document.getElementById("chat_mode").style.color = "#00FF7F";        document.getElementById("status_dot").style.background = "#00FF7F";
-        document.getElementById("search_bar").placeholder = "Напиши сообщение локальному ИИ...";
-        document.getElementById("search_bar").disabled = false;
-    } catch (error) {
-        console.error(error);
-        document.getElementById("chat_mode").innerText = "Ошибка запуска ИИ";
-    }
-}
 
 function checkMath(text) {
     let clean = text.replace(/[^0-9+\-*/(). ]/g, "").trim();
@@ -142,9 +128,7 @@ function triggerAction(actionText) {
     startLocalAI(actionText);
 }
 
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 function getRandomElement(array) {
     return array[Math.floor(Math.random() * array.length)];
@@ -155,7 +139,6 @@ function scrollScreen() {
     screen.scrollTop = screen.scrollHeight;
 }
 
-// Функция загрузки погоды
 async function fetchWeather() {
     try {
         const cleanWeatherUrl = getCleanUrl(weatherUrlSpaced);
@@ -164,13 +147,9 @@ async function fetchWeather() {
         
         const current = data.current_condition[0];
         const temp = current.temp_C;
-        const desc = current.lang_ru ? current.lang_ru[0].value : current.weatherDesc[0].value;
-        const humidity = current.humidity;
-        const wind = current.windspeedKmph;
-        
-        return `🌤 Погода в твоём городе:<br>🌡 Температура: <b>${temp}°C</b><br>📝 На улице: <b>${desc}</b><br>💧 Влажность: <b>${humidity}%</b><br>💨 Ветер: <b>${wind} км/ч</b>`;
+        const desc = current.lang_ru ? current.lang_ru.value : current.weatherDesc[0].value;
+        return `🌤 Погода в твоём городе:<br>🌡 Температура: <b>${temp}°C</b><br>📝 На улице: <b>${desc}</b>`;
     } catch (error) {
-        console.error(error);
         return "❌ Не удалось загрузить погоду. Проверь сеть.";
     }
 }
@@ -215,7 +194,8 @@ async function startLocalAI(query) {
     } 
 
     // 3. ПОГОДА
-    let isWeather = ["погода", "погоду", "на улице"].some(word => text.includes(word));    if (isWeather) {
+    let isWeather = ["погода", "погоду", "на улице"].some(word => text.includes(word));
+    if (isWeather) {
         const weatherReport = await fetchWeather();
         loadingDiv.remove();
         screen.innerHTML += `<div class="msg ai-msg">${weatherReport}</div>`;
@@ -223,83 +203,96 @@ async function startLocalAI(query) {
         return;
     }
 
-    // 4. Рецепты
-    let isRecipe = ["рецепт", "приготовить", "кушать", "еда"]. some(word => text.includes(word));
-    if (isRecipe) {
-        await delay(400);
-        loadingDiv.remove();
-        let answers = [
-            "🥞 Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь на сковородке кружочки!",
-            "🍕 Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!"
-        ];
-        screen.innerHTML += `<div class="msg ai-msg">🤖 ${getRandomElement(answers)}</div>`;
-        scrollScreen();
-        return;
+    // 🔥 4. УНИВЕРСАЛЬНАЯ НЕЙРО-БАЗА ЗНАНИЙ С АВТО-ИСПРАВЛЕНИЕМ ОШИБОК
+    let aiResult = "";
+
+    try {
+        const response = await fetch("database.json");
+        const database = await response.json();
+        
+        let foundTopic = "";
+        for (let key in database) {
+            if (text.includes(key)) {
+                foundTopic = key;
+                break;
+            }
+        }
+
+        if (foundTopic !== "") {
+            const topicData = database[foundTopic];
+            const correctWord = topicData.correct_name;
+            const mainInfo = topicData.info;
+
+            if (text.includes(correctWord) || (correctWord === "зеленая" && text.includes("зелёная")) || (correctWord === "соленый" && text.includes("солёный"))) {
+                aiResult = `🤖 Да, всё верно! Ведь ${mainInfo}`;
+            } else {
+                aiResult = `Нет, вообще-то ${foundTopic} — ${correctWord}, и вот почему: ${mainInfo}`;
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        aiResult = "❌ Ошибка чтения базы данных database.json";
     }
 
-    // 5. Локальный ИИ с памятью и распознаванием сленга
-    try {
+    // 5. Если темы нет в базе, проверяем стандартные приколюхи (баги и рецепты)
+    if (aiResult === "") {
+        if (text.includes("ошибка") || text.includes("баг") || text.includes("сломалось")) {
+            aiResult = "🛠️ Так, без паники! Проверь, все ли скобки закрыты и правильные ли кавычки стоят на Гитхабе. Твой Миртекс быстро раскатает этот баг! 💻";
+        }
+        else if (["рецепт", "приготовить", "кушать", "еда", "пицца", "блин"].some(word => text.includes(word))) {
+            if (text.includes("пицца") || text.includes("пиццы")) {
+                aiResult = "🍕 Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!";
+            } else {
+                aiResult = "🥞 Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь на сковородке кружочки!";
+            }
+        }
+    }
+
+    // 6. Разговорный сленг (если вообще ничего из прошлого не совпало)
+    if (aiResult === "") {
         await delay(600);
         loadingDiv.remove();
         if (!window.chatHistory) { window.chatHistory = []; }
         window.chatHistory.push(text);
-
-        let aiResult = "";
         
-        let helloCount = window.chatHistory.filter(t => 
-            ["привет", "хай", "ку", "салам", "здарова", "йо", "приветик"]. some(word => t.includes(word))
-        ).length;
-        let isHello = ["привет", "хай", "ку", "салам", "здарова", "йо", "здор"]. some(word => text.includes(word));
-
-        let isStatus = ["как дела", "как жизнь", "че как", "как ты", "че там", "как оно", "настроение", "настроенице", "как сам"]. some(word => text.includes(word));
+        let helloCount = window.chatHistory.filter(t => ["привет", "хай", "ку", "салам", "здарова", "йо"].some(word => t.includes(word))).length;
+        let isHello = ["привет", "хай", "ку", "салам", "здарова", "йо"].some(word => text.includes(word));
+        let isStatus = ["как дела", "как жизнь", "че как", "как ты", "настроение", "как сам"].some(word => text.includes(word));
 
         if (isStatus) {
             aiResult = getRandomElement([
-                "Да вообще отлично, провода кайфуют! Как твои успехи в школе? 🚀",
+                "Да вообще отлично, провода кайфуют! Как твои успехи? 🚀",
                 "Все чики-пуки, сижу на чилле, играю в Майнкрафт. Сам как? 😎",
-                "Настроение пушка! Готов разносить этот день в пух и прах. Что нового? 🔥",
-                "Все путем, код крутится, уровень качается! Как сам поживаешь?",
-                "Полный порядок, микросхемы греются от радости. Рассказывай, как дела!"
+                "Настроение пушка! Готов разносить этот день в пух и прах. 🔥"
             ]);
         } else if (isHello) {
             if (helloCount > 1) {
                 aiResult = getRandomElement([
                     "Да мы ж уже перетирали за это, здоровались! 😂",
-                    "Память отшибло? Привет еще раз! 👋",
-                    "Йоу, у тебя пластинку заело? Здаров!",
-                    "Два раза не повторяю, но приветик!"
+                    "Память отшибло? Привет еще раз! 👋"
                 ]);
             } else {
                 aiResult = getRandomElement([
                     "Йоу! На связи. Че кого, как сам? 😎",
-                    "Привет-привет! Какие новости, во что рубишься на каникулах?",
-                    "Ку! Рад видеть тебя на моей волне. Что мутим?",
-                    "Здарова! Я тут как раз чилл ловил. Че хотел?",
-                    "Приветик! Гоу общаться, я заряжен на полную!"
+                    "Привет-привет! Какие новости, во что рубишься на каникулах?"
                 ]);
             }
         } else {
             aiResult = getRandomElement([
                 "Реально базаришь. Расскажи подробнее! 🔥",
-                "Четко сказано. Я прям проникся.",
-                "Жиза! У меня микросхемы от такого плавятся.",
-                "Тема годная, одобряю полностью. Что дальше?",
-                "Хм, ну тут сыглы, спорить не буду. И че думаешь делать?"
+                "Жиза! У меня микросхемы от такого плавятся. 😎",
+                "Тема годная, одобряю полностью. Что дальше?"
             ]);
         }
-
-        screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
-        scrollScreen();
-    } catch (e) {
-        console.error(e);
-        if (loadingDiv) loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg">🤖 Я задумался. Повторите ещё раз свой запрос.</div>`;
-        scrollScreen();
+    } else {
+        await delay(500);
+        loadingDiv.remove();
     }
-}
 
-// Запускаем ИИ при старте страницы
-initAI();
+    screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
+    scrollScreen();
+}
 </script>
+
 </body>
 </html>
