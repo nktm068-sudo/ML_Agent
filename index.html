@@ -2,86 +2,22 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="yandex-verification" content="cfccdeee6db42126" />
     <title>Миртекс</title>
-    <style>
-    /* 1. Общие настройки для всего экрана */
-    body { 
-        background-color: #17212b; 
-        color: #ffffff; 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-        margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
-    }
-    
-    /* 2. Контейнер чата (на компе узкий, а на телефоне растянется на весь экран!) */
-    .container {
-        width: 100%; max-width: 550px; height: 100vh; background-color: #0e1621; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-    
-    /* 3. Шапка сайта (сделали текст крупнее) */
-    .chat-header {
-        background-color: #17212b; padding: 15px 20px; text-align: left; display: flex; flex-direction: column; border-bottom: 1px solid #101921;
-    }
-    .chat-title { font-size: 22px; font-weight: bold; color: #ffffff; }
-    .chat-status { font-size: 15px; color: #00FF7F; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
-    .status-dot { width: 10px; height: 10px; background-color: #00FF7F; border-radius: 50%; }
-    
-    /* 4. Экран чата (Шрифт стал большим и жирным!) */
-    #system_screen { 
-        flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth;
-    }
-    .msg {
-        max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 20px; font-weight: bold; line-height: 1.4; word-wrap: break-word; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
-    .user-msg { background-color: #2b5278; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 4px; }
-    .ai-msg { background-color: #182533; color: #ffffff; align-self: flex-start; border-bottom-left-radius: 4px; }
-    .sys-msg { background-color: #22313f; color: #4cc5f0; align-self: center; text-align: center; font-size: 16px; border-radius: 15px; padding: 8px 14px; max-width: 90%; }
-    
-    /* 5. Подвал чата (Кнопки и строка ввода) */
-    .chat-footer { background-color: #17212b; padding: 15px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #101921; }
-    
-    /* Сетка кнопок (на телефоне они перестроятся в два ряда, чтобы удобно нажимать пальцами!) */
-    .frame { 
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    }
-    
-    /* Крупные кнопки для мобилки */
-    button { 
-        height: 48px; font-size: 12px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: #ffffff;
-        display: flex; align-items: center; justify-content: center; transition: background 0.2s;
-    }
-    .btn-purple { background-color: #6c5ce7; }
-    .btn-gold { background-color: #f1c40f; color: #000000; }
-    .btn-blue { background-color: #3498db; }
-    .btn-green { background-color: #2ecc71; }
-    .btn-gray { background-color: #4b5563; }
-    button:hover { opacity: 0.9; }
-
-    /* Большая строка ввода текста */
-    #search_bar { 
-        width: 100%; height: 55px; background-color: #24303f; color: #ffffff; font-size: 18px; font-weight: bold; border: 1px solid #202b36; border-radius: 25px; padding: 0 20px; box-sizing: border-box;
-    }
-    #search_bar:focus { outline: none; border-color: #5288c1; }
-
-    /* 🔥 МАГИЯ МОБИЛЬНОЙ АДАПТАЦИИ: если экран узкий (как на телефоне) */
-    @media (max-width: 480px) {
-        .chat-title { font-size: 18px; }
-        .msg { font-size: 16px; max-width: 85%; } /* На телефоне делаем чуть-чуть компактнее, чтобы влезало */
-        .frame { grid-template-columns: repeat(2, 1fr); } /* Кнопки встают по 2 штуки в ряд, а не по 3! */
-        #search_bar { height: 50px; font-size: 16px; }
-    }
-</style>
+    <!-- ПОДКЛЮЧАЕМ НАШИ СТИЛИ -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
     <div class="chat-header">
         <div class="chat-title">🤖 Локальный ИИ «Миртекс»</div>
-        <div class="chat-status"><div id="status_dot" class="status-dot"></div><span id="chat_mode">Запуск системы...</span></div>
+        <div class="chat-status"><div id="status_dot" class="status-dot"></div><span id="chat_mode">ИИ активен локально</span></div>
     </div>
     
     <div id="system_screen">
-        <div class="msg sys-msg">[СИСТЕМА]: Запущена супер-быстрая версия чата!</div>
+        <div class="msg sys-msg">[СИСТЕМА]: Разделённая версия чата успешно запущена!</div>
     </div>
     
     <div class="chat-footer">
@@ -89,210 +25,14 @@
             <button class="btn-purple" onclick="triggerAction('Привет! Как дела?')">📝 БОЛТАТЬ</button>
             <button class="btn-gold" onclick="triggerAction('время')">⏰ ВРЕМЯ</button>
             <button class="btn-blue" onclick="triggerAction('погода')">🌤 ПОГОДА</button>
-            <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной еды')">🍕 РЕЦЕПТЫ</button>
+            <button class="btn-green" onclick="triggerAction('Дай рецепт вкусной пиццы')">🍕 РЕЦЕПТЫ</button>
             <button class="btn-gray" onclick="triggerAction('очистить')">🧹 СТЕРЕТЬ</button>
         </div>
-        <input type="text" id="search_bar" placeholder="Запуск робота..." disabled onkeypress="handleKeyPress(event)">
+        <input type="text" id="search_bar" placeholder="Напиши сообщение локальному ИИ..." onkeypress="handleKeyPress(event)">
     </div>
 </div>
 
-<script>
-function getCleanUrl(spacedUrl) {
-    return spacedUrl.replace(/\s/g, "");
-}
-
-const weatherUrlSpaced = "h t t p s : / / w t t r . i n / ? f o r m a t = j 1";
-
-function checkMath(text) {
-    let clean = text.replace(/[^0-9+\-*/(). ]/g, "").trim();
-    if (clean.length >= 3 && /[0-9]/.test(clean)) {
-        try {
-            let result = Function(`return (${clean})`)();
-            if (typeof result === "number" && !isNaN(result)) return result;
-        } catch(e) { return null; }
-    }
-    return null;
-}
-
-function handleKeyPress(event) {
-    if (event.key === "Enter") {
-        let input = document.getElementById("search_bar");
-        let query = input.value.trim();
-        if (query === "") return;
-        input.value = ""; 
-        startLocalAI(query);
-    }
-}
-
-function triggerAction(actionText) {
-    startLocalAI(actionText);
-}
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-function getRandomElement(array) {
-    return array[Math.floor(Math.random() * array.length)];
-}
-
-function scrollScreen() {
-    let screen = document.getElementById("system_screen");
-    screen.scrollTop = screen.scrollHeight;
-}
-
-async function fetchWeather() {
-    try {
-        const cleanWeatherUrl = getCleanUrl(weatherUrlSpaced);
-        const response = await fetch(cleanWeatherUrl);
-        const data = await response.json();
-        
-        const current = data.current_condition[0];
-        const temp = current.temp_C;
-        const desc = current.lang_ru ? current.lang_ru.value : current.weatherDesc[0].value;
-        return `🌤 Погода в твоём городе:<br>🌡 Температура: <b>${temp}°C</b><br>📝 На улице: <b>${desc}</b>`;
-    } catch (error) {
-        return "❌ Не удалось загрузить погоду. Проверь сеть.";
-    }
-}
-
-async function startLocalAI(query) {
-    let screen = document.getElementById("system_screen");
-    let text = query.toLowerCase().trim();
-    
-    if (text === "очистить") {
-        screen.innerHTML = "<div class='msg sys-msg'>[СИСТЕМА]: История чата очищена.</div>";
-        return;
-    }
-    
-    screen.innerHTML += `<div class="msg user-msg"><b>Вы:</b> ${query}</div>`;
-    
-    let loadingDiv = document.createElement("div");
-    loadingDiv.className = "msg ai-msg";
-    loadingDiv.style.color = "#00FF7F";
-    loadingDiv.innerHTML = "🧠 <i>Миртекс обрабатывает запрос...</i>";
-    screen.appendChild(loadingDiv);
-    scrollScreen();
-
-    // 1. Калькулятор
-    let mathResult = checkMath(text);
-    if (mathResult !== null) {
-        await delay(400);
-        loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg">🧮 Ответ равен: <b>${mathResult}</b></div>`;
-        scrollScreen();
-        return;
-    }
-
-    // 2. Время
-    let isTime = ["время", "час", "сколько время"].some(word => text.includes(word));
-    if (isTime) {
-        await delay(400);
-        loadingDiv.remove();
-        let now = new Date();
-        screen.innerHTML += `<div class="msg ai-msg">⏰ Время на часах: <b>${now.toLocaleTimeString()}</b></div>`;
-        scrollScreen();
-        return;
-    } 
-
-    // 3. ПОГОДА
-    let isWeather = ["погода", "погоду", "на улице"].some(word => text.includes(word));
-    if (isWeather) {
-        const weatherReport = await fetchWeather();
-        loadingDiv.remove();
-        screen.innerHTML += `<div class="msg ai-msg">${weatherReport}</div>`;
-        scrollScreen();
-        return;
-    }
-
-    // 🔥 4. УНИВЕРСАЛЬНАЯ НЕЙРО-БАЗА ЗНАНИЙ С АВТО-ИСПРАВЛЕНИЕМ ОШИБОК
-    let aiResult = "";
-
-    try {
-        const response = await fetch("database.json");
-        const database = await response.json();
-        
-        let foundTopic = "";
-        for (let key in database) {
-            if (text.includes(key)) {
-                foundTopic = key;
-                break;
-            }
-        }
-
-        if (foundTopic !== "") {
-            const topicData = database[foundTopic];
-            const correctWord = topicData.correct_name;
-            const mainInfo = topicData.info;
-
-            if (text.includes(correctWord) || (correctWord === "зеленая" && text.includes("зелёная")) || (correctWord === "соленый" && text.includes("солёный"))) {
-                aiResult = `🤖 Да, всё верно! Ведь ${mainInfo}`;
-            } else {
-                aiResult = `Нет, вообще-то ${foundTopic} — ${correctWord}, и вот почему: ${mainInfo}`;
-            }
-        }
-    } catch (error) {
-        console.error(error);
-        aiResult = "❌ Ошибка чтения базы данных database.json";
-    }
-
-    // 5. Если темы нет в базе, проверяем стандартные приколюхи (баги и рецепты)
-    if (aiResult === "") {
-        if (text.includes("ошибка") || text.includes("баг") || text.includes("сломалось")) {
-            aiResult = "🛠️ Так, без паники! Проверь, все ли скобки закрыты и правильные ли кавычки стоят на Гитхабе. Твой Миртекс быстро раскатает этот баг! 💻";
-        }
-        else if (["рецепт", "приготовить", "кушать", "еда", "пицца", "блин"].some(word => text.includes(word))) {
-            if (text.includes("пицца") || text.includes("пиццы")) {
-                aiResult = "🍕 Рецепт mini-пиццы: возьми батон, намажь кетчупом, положи колбасу, сыр и запеки в микроволновке на 1 минуту!";
-            } else {
-                aiResult = "🥞 Рецепт блинчиков: смешай 1 яйцо, 1 стакан молока и 1 стакан муки. Добавь сахара и жарь на сковородке кружочки!";
-            }
-        }
-    }
-
-    // 6. Разговорный сленг (если вообще ничего из прошлого не совпало)
-    if (aiResult === "") {
-        await delay(600);
-        loadingDiv.remove();
-        if (!window.chatHistory) { window.chatHistory = []; }
-        window.chatHistory.push(text);
-        
-        let helloCount = window.chatHistory.filter(t => ["привет", "хай", "ку", "салам", "здарова", "йо"].some(word => t.includes(word))).length;
-        let isHello = ["привет", "хай", "ку", "салам", "здарова", "йо"].some(word => text.includes(word));
-        let isStatus = ["как дела", "как жизнь", "че как", "как ты", "настроение", "как сам"].some(word => text.includes(word));
-
-        if (isStatus) {
-            aiResult = getRandomElement([
-                "Да вообще отлично, провода кайфуют! Как твои успехи? 🚀",
-                "Все чики-пуки, сижу на чилле, играю в Майнкрафт. Сам как? 😎",
-                "Настроение пушка! Готов разносить этот день в пух и прах. 🔥"
-            ]);
-        } else if (isHello) {
-            if (helloCount > 1) {
-                aiResult = getRandomElement([
-                    "Да мы ж уже перетирали за это, здоровались! 😂",
-                    "Память отшибло? Привет еще раз! 👋"
-                ]);
-            } else {
-                aiResult = getRandomElement([
-                    "Йоу! На связи. Че кого, как сам? 😎",
-                    "Привет-привет! Какие новости, во что рубишься на каникулах?"
-                ]);
-            }
-        } else {
-            aiResult = getRandomElement([
-                "Реально базаришь. Расскажи подробнее! 🔥",
-                "Жиза! У меня микросхемы от такого плавятся. 😎",
-                "Тема годная, одобряю полностью. Что дальше?"
-            ]);
-        }
-    } else {
-        await delay(500);
-        loadingDiv.remove();
-    }
-
-    screen.innerHTML += `<div class="msg ai-msg">🤖 ${aiResult}</div>`;
-    scrollScreen();
-}
-</script>
-
+<!-- ПОДКЛЮЧАЕМ НАШУ ЛОГИКУ -->
+<script src="script.js"></script>
 </body>
 </html>
